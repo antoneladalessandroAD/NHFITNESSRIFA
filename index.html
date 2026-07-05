@@ -123,7 +123,7 @@
 </div>
 
 <div class="toolbar">
-  <input id="buscador" type="text" placeholder="Buscar número, nombre o teléfono...">
+  <input id="buscador" type="text" placeholder="Buscar número...">
   <button id="loginBtn" onclick="abrirLogin()">🔒 Admin</button>
   <button id="logoutBtn" style="display:none;" onclick="logout()">Salir</button>
 </div>
@@ -160,8 +160,8 @@
 <div class="overlay" id="overlayLogin">
   <div class="modal">
     <h3>Ingreso Administrador</h3>
-    <label>Usuario</label>
-    <input type="text" id="loginUser">
+    <label>Email</label>
+    <input type="text" id="loginUser" placeholder="admin@correo.com">
     <label>Contraseña</label>
     <input type="password" id="loginPass">
     <div class="modal-buttons">
@@ -175,8 +175,11 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot
+  getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAqV6XxYj5HgWmNRXdOKvGa2aeYG-X3Rpc",
@@ -189,21 +192,38 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 const numerosRef = collection(db, "numeros");
+const privadosRef = collection(db, "compradores_privados");
 
-const USUARIO_ADMIN = "NHF";
-const PASS_ADMIN = "nhfitness";
 let esAdmin = false;
 let numeroActual = null;
-let datos = {};
+let datosPublicos = {};
+let datosPrivados = {};
 
 function pad(n){ return n.toString().padStart(3,"0"); }
 
+// Escucha cambios de sesion (login/logout)
+onAuthStateChanged(auth, (user) => {
+  esAdmin = !!user;
+  document.getElementById("loginBtn").style.display = esAdmin ? "none" : "inline-block";
+  document.getElementById("logoutBtn").style.display = esAdmin ? "inline-block" : "none";
+
+  // Solo si es admin, escuchamos la coleccion privada
+  if(esAdmin){
+    onSnapshot(privadosRef, (snapshot) => {
+      datosPrivados = {};
+      snapshot.forEach((docu) => { datosPrivados[docu.id] = docu.data(); });
+    });
+  } else {
+    datosPrivados = {};
+  }
+});
+
+// Datos publicos: todos los ven (solo vendido true/false)
 onSnapshot(numerosRef, (snapshot) => {
-  datos = {};
-  snapshot.forEach((docu) => {
-    datos[docu.id] = docu.data();
-  });
+  datosPublicos = {};
+  snapshot.forEach((docu) => { datosPublicos[docu.id] = docu.data(); });
   document.getElementById("cargando").style.display = "none";
   renderGrid(document.getElementById("buscador").value);
 });
@@ -215,16 +235,13 @@ function renderGrid(filtro=""){
   let vendidos = 0;
   for(let i=0;i<1000;i++){
     const num = pad(i);
-    const info = datos[num];
+    const info = datosPublicos[num];
     const vendido = info && info.vendido;
     if(vendido) vendidos++;
 
     if(filtro){
       const f = filtro.toLowerCase();
-      const coincideNum = num.includes(f);
-      const coincideNombre = info && info.nombre && info.nombre.toLowerCase().includes(f);
-      const coincideContacto = info && info.contacto && info.contacto.toLowerCase().includes(f);
-      if(!coincideNum && !coincideNombre && !coincideContacto) continue;
+      if(!num.includes(f)) continue;
     }
 
     const div = document.createElement("div");
@@ -237,9 +254,9 @@ function renderGrid(filtro=""){
   document.getElementById("countDisponibles").textContent = 1000 - vendidos;
 }
 
-window.abrirModalNumero = function(num){
+window.abrirModalNumero = async function(num){
   numeroActual = num;
-  const info = datos[num];
+  const infoPublica = datosPublicos[num];
   document.getElementById("tituloModal").textContent = "Número " + num;
 
   const soloLectura = document.getElementById("soloLectura");
@@ -252,20 +269,14 @@ window.abrirModalNumero = function(num){
     soloLectura.style.display = "none";
     botonesAdmin.style.display = "flex";
     botonSoloVer.style.display = "none";
-    document.getElementById("inputNombre").value = info ? info.nombre : "";
-    document.getElementById("inputContacto").value = info ? info.contacto : "";
+    const priv = datosPrivados[num];
+    document.getElementById("inputNombre").value = priv ? priv.nombre : "";
+    document.getElementById("inputContacto").value = priv ? priv.contacto : "";
   } else {
     formularioAdmin.style.display = "none";
     botonesAdmin.style.display = "none";
     botonSoloVer.style.display = "flex";
-    soloLectura.style.display = "block";
-    if(info && info.vendido){
-      document.getElementById("verNombre").textContent = info.nombre;
-      document.getElementById("verContacto").textContent = info.contacto;
-    } else {
-      document.getElementById("verNombre").textContent = "— Disponible —";
-      document.getElementById("verContacto").textContent = "Contactar al organizador para reservar";
-    }
+    soloLectura.style.display = "none"; // usuarios normales NUNCA ven datos del comprador
   }
   document.getElementById("overlayNumero").classList.add("active");
 }
@@ -281,39 +292,36 @@ window.guardarNumero = async function(){
     alert("Completá nombre y teléfono/IG");
     return;
   }
-  await setDoc(doc(db, "numeros", numeroActual), { vendido:true, nombre, contacto });
+  await setDoc(doc(db, "numeros", numeroActual), { vendido:true });
+  await setDoc(doc(db, "compradores_privados", numeroActual), { nombre, contacto });
   cerrarModal();
 }
 
 window.liberarNumero = async function(){
   await deleteDoc(doc(db, "numeros", numeroActual));
+  await deleteDoc(doc(db, "compradores_privados", numeroActual));
   cerrarModal();
 }
 
 window.abrirLogin = function(){
-  if(esAdmin){ return; }
   document.getElementById("overlayLogin").classList.add("active");
 }
 window.cerrarLogin = function(){
   document.getElementById("overlayLogin").classList.remove("active");
 }
-window.login = function(){
+window.login = async function(){
   const u = document.getElementById("loginUser").value.trim();
   const p = document.getElementById("loginPass").value.trim();
-  if(u === USUARIO_ADMIN && p === PASS_ADMIN){
-    esAdmin = true;
-    document.getElementById("loginBtn").style.display = "none";
-    document.getElementById("logoutBtn").style.display = "inline-block";
+  try{
+    await signInWithEmailAndPassword(auth, u, p);
     cerrarLogin();
     alert("Bienvenido, administrador");
-  } else {
+  } catch(e){
     alert("Usuario o contraseña incorrectos");
   }
 }
-window.logout = function(){
-  esAdmin = false;
-  document.getElementById("loginBtn").style.display = "inline-block";
-  document.getElementById("logoutBtn").style.display = "none";
+window.logout = async function(){
+  await signOut(auth);
 }
 
 document.getElementById("buscador").addEventListener("input", (e)=>{
