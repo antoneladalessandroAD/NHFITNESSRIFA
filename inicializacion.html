@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+<h3>Reinicializando números... mirá la consola (F12)</h3>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAqV6XxYj5HgWmNRXdOKvGa2aeYG-X3Rpc",
+  authDomain: "nh-fitness-rifa-987f4.firebaseapp.com",
+  projectId: "nh-fitness-rifa-987f4",
+  storageBucket: "nh-fitness-rifa-987f4.firebasestorage.app",
+  messagingSenderId: "115097433531",
+  appId: "1:115097433531:web:9ba99c6b4e766d01ddc09e"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+async function inicializar(){
+  for(let i=0;i<1000;i++){
+    const id = i.toString().padStart(3,"0");
+    await setDoc(doc(db,"numeros",id), {
+      vendido: false,
+      reservado: false,
+      reservadoHasta: null
+    });
+    console.log("Creado:", id);
+  }
+  alert("¡1000 números reinicializados!");
+}
+inicializar();
+</script>
+</body>
+</html>
