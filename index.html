@@ -5,119 +5,57 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rifa NH-Fitness</title>
 <style>
-  :root{
-    --naranja:#f7941e; --negro:#1a1a1a; --blanco:#ffffff; --verde:#2ecc71; --rojo:#e74c3c; --amarillo:#f1c40f; --azul:#3498db;
-  }
+  :root{--naranja:#f7941e; --negro:#1a1a1a; --verde:#2ecc71; --rojo:#e74c3c; --amarillo:#f1c40f; --azul:#3498db;}
   *{box-sizing:border-box; font-family:'Segoe UI',Arial,sans-serif;}
   body{margin:0; background:#f4f4f4; padding-bottom:90px;}
-  header{
-    background:var(--negro); color:#fff; text-align:center; padding:15px;
-    display:flex; flex-direction:column; align-items:center; gap:8px;
-  }
+  header{background:var(--negro); color:#fff; text-align:center; padding:15px; display:flex; flex-direction:column; align-items:center; gap:8px;}
   header img{max-width:110px; border-radius:10px;}
   header h2{margin:5px 0 0 0; color:var(--naranja);}
   header p{margin:0; font-size:14px; opacity:.9;}
-
-  .precio-banner{
-    background:var(--naranja); color:var(--negro); text-align:center;
-    font-weight:bold; padding:8px; font-size:16px;
-  }
-
-  .stats{
-    display:flex; justify-content:center; gap:14px; margin:15px 0; flex-wrap:wrap;
-  }
-  .stat-box{
-    background:#fff; border-radius:10px; padding:10px 16px; text-align:center;
-    box-shadow:0 2px 6px rgba(0,0,0,.15); min-width:95px;
-  }
+  .precio-banner{background:var(--naranja); color:var(--negro); text-align:center; font-weight:bold; padding:8px; font-size:16px;}
+  .stats{display:flex; justify-content:center; gap:14px; margin:15px 0; flex-wrap:wrap;}
+  .stat-box{background:#fff; border-radius:10px; padding:10px 16px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,.15); min-width:95px;}
   .stat-box .num{font-size:22px; font-weight:bold;}
   .stat-box.vendidos .num{color:var(--rojo);}
   .stat-box.reservados .num{color:#b8860b;}
   .stat-box.disponibles .num{color:var(--verde);}
-
-  .toolbar{
-    display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:10px auto;
-    max-width:600px; padding:0 10px;
-  }
-  #buscador{
-    flex:1; min-width:200px; padding:10px; border-radius:8px; border:1px solid #ccc;
-  }
-  #loginBtn, #logoutBtn{
-    padding:10px 15px; border:none; border-radius:8px; background:var(--naranja);
-    color:var(--negro); font-weight:bold; cursor:pointer;
-  }
-
-  .leyenda{
-    display:flex; justify-content:center; gap:16px; flex-wrap:wrap; font-size:12px;
-    margin-bottom:6px; color:#444;
-  }
+  .toolbar{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:10px auto; max-width:600px; padding:0 10px;}
+  #buscador{flex:1; min-width:200px; padding:10px; border-radius:8px; border:1px solid #ccc;}
+  #loginBtn, #logoutBtn{padding:10px 15px; border:none; border-radius:8px; background:var(--naranja); color:var(--negro); font-weight:bold; cursor:pointer;}
+  .leyenda{display:flex; justify-content:center; gap:16px; flex-wrap:wrap; font-size:12px; margin-bottom:6px; color:#444;}
   .leyenda span{display:flex; align-items:center; gap:5px;}
   .leyenda i{width:12px; height:12px; border-radius:3px; display:inline-block;}
-
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(58px,1fr));
-    gap:6px; max-width:1000px; margin:20px auto; padding:0 10px;
-  }
-  .numero{
-    aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
-    border-radius:8px; font-weight:bold; color:#fff; cursor:pointer;
-    font-size:13px; user-select:none; transition:transform .1s;
-    border:2px solid rgba(0,0,0,.15);
-  }
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(58px,1fr)); gap:6px; max-width:1000px; margin:20px auto; padding:0 10px;}
+  .numero{aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-weight:bold; color:#fff; cursor:pointer; font-size:13px; user-select:none; transition:transform .1s; border:2px solid rgba(0,0,0,.15);}
   .numero:hover{transform:scale(1.08);}
   .disponible{background:var(--verde);}
   .vendido{background:var(--rojo);}
   .reservado{background:var(--amarillo); color:#1a1a1a;}
   .seleccionado{background:var(--azul); box-shadow:0 0 0 3px #1a1a1a inset;}
-
-  .overlay{
-    display:none; position:fixed; inset:0; background:rgba(0,0,0,.6);
-    align-items:center; justify-content:center; z-index:999; padding:15px;
-  }
+  .overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:999; padding:15px;}
   .overlay.active{display:flex;}
-  .modal{
-    background:#fff; border-radius:12px; padding:20px; width:100%; max-width:360px;
-    max-height:90vh; overflow-y:auto;
-  }
+  .modal{background:#fff; border-radius:12px; padding:20px; width:100%; max-width:360px; max-height:90vh; overflow-y:auto;}
   .modal h3{margin-top:0; text-align:center; color:var(--negro);}
   .modal label{display:block; margin-top:10px; font-size:14px; font-weight:bold;}
-  .modal input{
-    width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:6px;
-  }
+  .modal input{width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:6px;}
   .modal-buttons{display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;}
-  .modal-buttons button{
-    flex:1; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer;
-    min-width:90px;
-  }
+  .modal-buttons button{flex:1; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; min-width:90px;}
   .btn-guardar{background:var(--verde); color:#fff;}
   .btn-eliminar{background:var(--rojo); color:#fff;}
   .btn-cerrar{background:#ccc;}
   .loading{text-align:center; padding:20px; color:#888;}
-
-  .barra-seleccion{
-    display:none; position:fixed; bottom:0; left:0; right:0; background:var(--negro);
-    color:#fff; padding:12px 16px; z-index:900; justify-content:space-between;
-    align-items:center; flex-wrap:wrap; gap:10px;
-  }
+  .barra-seleccion{display:none; position:fixed; bottom:0; left:0; right:0; background:var(--negro); color:#fff; padding:12px 16px; z-index:900; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;}
   .barra-seleccion.activa{display:flex;}
   .barra-seleccion .info{font-size:14px;}
   .barra-seleccion .acciones{display:flex; gap:8px;}
-  .barra-seleccion button{
-    border:none; padding:10px 16px; border-radius:8px; font-weight:bold; cursor:pointer;
-  }
+  .barra-seleccion button{border:none; padding:10px 16px; border-radius:8px; font-weight:bold; cursor:pointer;}
   .btn-reservar{background:var(--verde); color:#fff;}
   .btn-cancelar-sel{background:var(--rojo); color:#fff;}
-
-  .alias-box{
-    background:#fff8e1; border:2px dashed #b8860b; border-radius:8px; padding:10px;
-    text-align:center; font-size:18px; font-weight:bold; color:#7a5c00; margin:10px 0;
-  }
+  .alias-box{background:#fff8e1; border:2px dashed #b8860b; border-radius:8px; padding:10px; text-align:center; font-size:18px; font-weight:bold; color:#7a5c00; margin:10px 0;}
 </style>
 </head>
 <body>
 
-<!-- MODAL BIENVENIDA -->
 <div class="overlay active" id="overlayBienvenida">
   <div class="modal" style="text-align:center;">
     <h3>🏆 ¡Bienvenido a la Rifa NH-Fitness!</h3>
@@ -143,18 +81,9 @@
 <div class="precio-banner" id="precioBanner">💵 Valor del número: $5.000</div>
 
 <div class="stats">
-  <div class="stat-box vendidos">
-    <div class="num" id="countVendidos">0</div>
-    <div>Vendidos</div>
-  </div>
-  <div class="stat-box reservados">
-    <div class="num" id="countReservados">0</div>
-    <div>Reservados</div>
-  </div>
-  <div class="stat-box disponibles">
-    <div class="num" id="countDisponibles">1000</div>
-    <div>Disponibles</div>
-  </div>
+  <div class="stat-box vendidos"><div class="num" id="countVendidos">0</div><div>Vendidos</div></div>
+  <div class="stat-box reservados"><div class="num" id="countReservados">0</div><div>Reservados</div></div>
+  <div class="stat-box disponibles"><div class="num" id="countDisponibles">1000</div><div>Disponibles</div></div>
 </div>
 
 <div class="leyenda">
@@ -173,7 +102,6 @@
 <div id="cargando" class="loading">Cargando números...</div>
 <div class="grid" id="grid"></div>
 
-<!-- BARRA DE SELECCION (comprador) -->
 <div class="barra-seleccion" id="barraSeleccion">
   <div class="info">🎯 <span id="cantSeleccionados">0</span> número(s) — Total: <b id="totalSeleccion">$0</b></div>
   <div class="acciones">
@@ -182,22 +110,18 @@
   </div>
 </div>
 
-<!-- MODAL NUMERO (ver / gestionar un número puntual) -->
 <div class="overlay" id="overlayNumero">
   <div class="modal">
     <h3 id="tituloModal">Número 000</h3>
     <div id="infoEstado"></div>
     <div id="formularioAdmin" style="display:none;">
-      <label>Nombre y apellido</label>
-      <input type="text" id="inputNombre" placeholder="Ej: Juan Pérez">
-      <label>Teléfono</label>
-      <input type="text" id="inputContacto" placeholder="Ej: 099123456">
+      <p><b>Nombre:</b> <span id="verNombre">-</span></p>
+      <p><b>Teléfono:</b> <span id="verContacto">-</span></p>
     </div>
     <div class="modal-buttons" id="botonesModal"></div>
   </div>
 </div>
 
-<!-- MODAL RESERVA (comprador confirma su selección) -->
 <div class="overlay" id="overlayReserva">
   <div class="modal">
     <h3>Confirmar selección</h3>
@@ -220,12 +144,11 @@
   </div>
 </div>
 
-<!-- MODAL LOGIN -->
 <div class="overlay" id="overlayLogin">
   <div class="modal">
     <h3>Ingreso Administrador</h3>
     <label>Email</label>
-    <input type="text" id="loginUser" placeholder="admin@correo.com">
+    <input type="text" id="loginUser" placeholder="nhf@nhfitness.com">
     <label>Contraseña</label>
     <input type="password" id="loginPass">
     <div class="modal-buttons">
@@ -235,57 +158,78 @@
   </div>
 </div>
 
-<script>
-/* ===== CONFIG ===== */
-const TOTAL_NUMEROS = 1000;
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, doc, getDoc, setDoc, onSnapshot, updateDoc, orderBy, query
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAqV6XxYj5HgWmNRXdOKvGa2aeYG-X3Rpc",
+  authDomain: "nh-fitness-rifa-987f4.firebaseapp.com",
+  projectId: "nh-fitness-rifa-987f4",
+  storageBucket: "nh-fitness-rifa-987f4.firebasestorage.app",
+  messagingSenderId: "115097433531",
+  appId: "1:115097433531:web:9ba99c6b4e766d01ddc09e"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
 const PRECIO_UNITARIO = 5000;
 const MINUTOS_RESERVA = 15;
-const ADMIN_USER = "admin@correo.com";
-const ADMIN_PASS = "1234"; // ⚠ Cambiar - solo demo, no es seguro en frontend puro
 
 let numeros = [];
 let seleccionados = [];
 let esAdmin = false;
-let numeroActivo = null;
 
-/* ===== PERSISTENCIA (localStorage) ===== */
-function cargarNumeros(){
-  const guardado = localStorage.getItem("rifaNumeros");
-  if(guardado){
-    numeros = JSON.parse(guardado);
-  } else {
-    numeros = [];
-    for(let i=0;i<TOTAL_NUMEROS;i++){
-      numeros.push({
-        id: i.toString().padStart(3,"0"),
-        estado: "disponible", // disponible | reservado | vendido
-        nombre: "",
-        contacto: "",
-        reservadoHasta: null
-      });
-    }
-    guardarNumeros();
-  }
-}
-function guardarNumeros(){
-  localStorage.setItem("rifaNumeros", JSON.stringify(numeros));
+const q = query(collection(db, "numeros"), orderBy("__name__"));
+onSnapshot(q, (snapshot) => {
+  numeros = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  document.getElementById("cargando").style.display = "none";
+  render();
+});
+
+onAuthStateChanged(auth, (user) => {
+  esAdmin = !!user;
+  document.getElementById("loginBtn").style.display = esAdmin ? "none" : "inline-block";
+  document.getElementById("logoutBtn").style.display = esAdmin ? "inline-block" : "none";
+  seleccionados = [];
+  render();
+});
+
+window.login = function(){
+  const email = document.getElementById("loginUser").value.trim();
+  const pass = document.getElementById("loginPass").value.trim();
+  signInWithEmailAndPassword(auth, email, pass)
+    .then(() => cerrarLogin())
+    .catch((err) => { alert("Usuario o contraseña incorrectos."); console.error(err); });
+};
+
+window.logout = function(){ signOut(auth); };
+
+function estadoDe(n){
+  if(n.vendido) return "vendido";
+  if(n.reservado) return "reservado";
+  return "disponible";
 }
 
-/* ===== RENDER ===== */
-function render(){
-  liberarVencidos();
+window.render = function(){
   const grid = document.getElementById("grid");
   const filtro = document.getElementById("buscador").value.trim();
   grid.innerHTML = "";
-  document.getElementById("cargando").style.display = "none";
 
   let vendidos=0, reservados=0, disponibles=0;
 
   numeros.forEach(n=>{
     if(filtro && !n.id.includes(filtro)) return;
-
+    const estado = estadoDe(n);
     const div = document.createElement("div");
-    div.className = "numero " + n.estado;
+    div.className = "numero " + estado;
     if(seleccionados.includes(n.id)) div.className = "numero seleccionado";
     div.textContent = n.id;
     div.onclick = () => onClickNumero(n.id);
@@ -293,8 +237,9 @@ function render(){
   });
 
   numeros.forEach(n=>{
-    if(n.estado==="vendido") vendidos++;
-    else if(n.estado==="reservado") reservados++;
+    const estado = estadoDe(n);
+    if(estado==="vendido") vendidos++;
+    else if(estado==="reservado") reservados++;
     else disponibles++;
   });
 
@@ -303,47 +248,29 @@ function render(){
   document.getElementById("countDisponibles").textContent = disponibles;
 
   actualizarBarraSeleccion();
-}
+};
 
-/* ===== LIBERACION AUTOMATICA 15 MIN ===== */
-function liberarVencidos(){
-  const ahora = Date.now();
-  let cambio = false;
-  numeros.forEach(n=>{
-    if(n.estado==="reservado" && n.reservadoHasta && ahora > n.reservadoHasta){
-      n.estado = "disponible";
-      n.nombre = "";
-      n.contacto = "";
-      n.reservadoHasta = null;
-      cambio = true;
-    }
-  });
-  if(cambio) guardarNumeros();
-}
-
-/* ===== CLICK EN UN NUMERO ===== */
 function onClickNumero(id){
   const n = numeros.find(x=>x.id===id);
+  const estado = estadoDe(n);
 
   if(esAdmin){
     abrirModalAdmin(n);
     return;
   }
 
-  // Modo vendedor: solo puede tocar disponibles o des-seleccionar los propios
-  if(n.estado === "disponible"){
+  if(estado === "disponible"){
     const idx = seleccionados.indexOf(id);
     if(idx>-1) seleccionados.splice(idx,1);
     else seleccionados.push(id);
     render();
-  } else if(n.estado === "reservado"){
+  } else if(estado === "reservado"){
     alert("Este número ya fue reservado por otro comprador. Espera a que se libere o elige otro.");
   } else {
     alert("Este número ya fue vendido.");
   }
 }
 
-/* ===== BARRA DE SELECCION (vendedor) ===== */
 function actualizarBarraSeleccion(){
   const barra = document.getElementById("barraSeleccion");
   if(seleccionados.length>0){
@@ -355,24 +282,20 @@ function actualizarBarraSeleccion(){
   }
 }
 
-function cancelarSeleccion(){
-  seleccionados = [];
-  render();
-}
+window.cancelarSeleccion = function(){ seleccionados = []; render(); };
 
-/* ===== MODAL RESERVA (pop-up con numeros + monto + alias) ===== */
-function abrirReserva(){
+window.abrirReserva = function(){
   if(seleccionados.length===0) return;
   document.getElementById("listaSeleccionados").textContent = seleccionados.join(", ");
   document.getElementById("montoTotal").textContent = "$" + (seleccionados.length*PRECIO_UNITARIO).toLocaleString("es-AR");
   document.getElementById("overlayReserva").classList.add("active");
-}
+};
 
-function cancelarReserva(){
+window.cancelarReserva = function(){
   document.getElementById("overlayReserva").classList.remove("active");
-}
+};
 
-function confirmarReserva(){
+window.confirmarReserva = async function(){
   const nombre = document.getElementById("reservaNombre").value.trim();
   const telefono = document.getElementById("reservaTelefono").value.trim();
 
@@ -383,45 +306,60 @@ function confirmarReserva(){
 
   const vencimiento = Date.now() + MINUTOS_RESERVA*60*1000;
 
-  seleccionados.forEach(id=>{
-    const n = numeros.find(x=>x.id===id);
-    n.estado = "reservado";
-    n.nombre = nombre;
-    n.contacto = telefono;
-    n.reservadoHasta = vencimiento;
-  });
+  try{
+    for(const id of seleccionados){
+      await updateDoc(doc(db,"numeros",id), {
+        vendido: false,
+        reservado: true,
+        reservadoHasta: vencimiento
+      });
+      await setDoc(doc(db,"compradores_privados",id), {
+        nombre: nombre,
+        contacto: telefono
+      });
+    }
+    seleccionados = [];
+    document.getElementById("overlayReserva").classList.remove("active");
+    document.getElementById("reservaNombre").value = "";
+    document.getElementById("reservaTelefono").value = "";
+    alert("✅ Números reservados por 15 minutos. Recordá transferir al alias NH.rifa antes de que venza el tiempo.");
+  }catch(err){
+    alert("Ocurrió un error al reservar. Intentá de nuevo.");
+    console.error(err);
+  }
+};
 
-  guardarNumeros();
-  seleccionados = [];
-  document.getElementById("overlayReserva").classList.remove("active");
-  document.getElementById("reservaNombre").value = "";
-  document.getElementById("reservaTelefono").value = "";
-  render();
-
-  alert("✅ Números reservados por 15 minutos. Recordá transferir al alias NH.rifa antes de que venza el tiempo.");
-}
-
-/* ===== MODAL NUMERO (solo administrador confirma o libera) ===== */
-function abrirModalAdmin(n){
-  numeroActivo = n.id;
+async function abrirModalAdmin(n){
+  const estado = estadoDe(n);
   document.getElementById("tituloModal").textContent = "Número " + n.id;
   document.getElementById("formularioAdmin").style.display = "block";
-  document.getElementById("inputNombre").value = n.nombre || "";
-  document.getElementById("inputContacto").value = n.contacto || "";
+
+  document.getElementById("verNombre").textContent = "-";
+  document.getElementById("verContacto").textContent = "-";
+
+  if(estado === "reservado" || estado === "vendido"){
+    try{
+      const snap = await getDoc(doc(db,"compradores_privados",n.id));
+      if(snap.exists()){
+        document.getElementById("verNombre").textContent = snap.data().nombre || "-";
+        document.getElementById("verContacto").textContent = snap.data().contacto || "-";
+      }
+    }catch(err){ console.error(err); }
+  }
 
   let estadoTexto = "";
-  if(n.estado==="disponible") estadoTexto = "🟢 Disponible";
-  if(n.estado==="reservado"){
+  if(estado==="disponible") estadoTexto = "🟢 Disponible";
+  if(estado==="reservado"){
     const restante = Math.max(0, Math.ceil((n.reservadoHasta - Date.now())/60000));
     estadoTexto = `🟡 Reservado — vence en ${restante} min`;
   }
-  if(n.estado==="vendido") estadoTexto = "🔴 Vendido";
+  if(estado==="vendido") estadoTexto = "🔴 Vendido";
   document.getElementById("infoEstado").innerHTML = "<p><b>Estado:</b> "+estadoTexto+"</p>";
 
   const botones = document.getElementById("botonesModal");
   botones.innerHTML = "";
 
-  if(n.estado==="reservado"){
+  if(estado==="reservado"){
     const btnConfirmar = document.createElement("button");
     btnConfirmar.className = "btn-guardar";
     btnConfirmar.textContent = "✅ Confirmar pago recibido";
@@ -435,7 +373,7 @@ function abrirModalAdmin(n){
     botones.appendChild(btnLiberar);
   }
 
-  if(n.estado==="vendido"){
+  if(estado==="vendido"){
     const btnLiberar = document.createElement("button");
     btnLiberar.className = "btn-eliminar";
     btnLiberar.textContent = "Anular venta";
@@ -452,72 +390,5 @@ function abrirModalAdmin(n){
   document.getElementById("overlayNumero").classList.add("active");
 }
 
-function confirmarPagoAdmin(id){
-  const n = numeros.find(x=>x.id===id);
-  n.estado = "vendido";
-  n.reservadoHasta = null;
-  guardarNumeros();
-  cerrarModalAdmin();
-  render();
-}
-
-function liberarNumeroAdmin(id){
-  const n = numeros.find(x=>x.id===id);
-  n.estado = "disponible";
-  n.nombre = "";
-  n.contacto = "";
-  n.reservadoHasta = null;
-  guardarNumeros();
-  cerrarModalAdmin();
-  render();
-}
-
-function cerrarModalAdmin(){
-  document.getElementById("overlayNumero").classList.remove("active");
-  numeroActivo = null;
-}
-
-/* ===== LOGIN ADMIN ===== */
-function abrirLogin(){
-  document.getElementById("overlayLogin").classList.add("active");
-}
-function cerrarLogin(){
-  document.getElementById("overlayLogin").classList.remove("active");
-}
-function login(){
-  const user = document.getElementById("loginUser").value.trim();
-  const pass = document.getElementById("loginPass").value.trim();
-  if(user===ADMIN_USER && pass===ADMIN_PASS){
-    esAdmin = true;
-    document.getElementById("loginBtn").style.display = "none";
-    document.getElementById("logoutBtn").style.display = "inline-block";
-    cerrarLogin();
-    seleccionados = [];
-    render();
-  } else {
-    alert("Usuario o contraseña incorrectos.");
-  }
-}
-function logout(){
-  esAdmin = false;
-  document.getElementById("loginBtn").style.display = "inline-block";
-  document.getElementById("logoutBtn").style.display = "none";
-  render();
-}
-
-/* ===== BIENVENIDA ===== */
-function cerrarBienvenida(){
-  document.getElementById("overlayBienvenida").classList.remove("active");
-}
-
-/* ===== BUSCADOR ===== */
-document.getElementById("buscador").addEventListener("input", render);
-
-/* ===== INICIO ===== */
-cargarNumeros();
-render();
-setInterval(render, 15000); // revisa liberaciones automáticas cada 15s
-</script>
-
-</body>
-</html>
+async function confirmarPagoAdmin(id){
+  await updateDoc(doc(db,"numeros",id), { vendido: true, reservado:
