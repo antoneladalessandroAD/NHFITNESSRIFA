@@ -12,15 +12,8 @@
   header h2{margin:5px 0 0 0; color:var(--naranja);}
   header p{margin:0; font-size:14px; opacity:.9;}
   .precio-banner{background:var(--naranja); color:var(--negro); text-align:center; font-weight:bold; padding:8px; font-size:16px;}
-  .stats{display:flex; justify-content:center; gap:14px; margin:15px 0; flex-wrap:wrap;}
-  .stat-box{background:#fff; border-radius:10px; padding:10px 16px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,.15); min-width:95px;}
-  .stat-box .num{font-size:22px; font-weight:bold;}
-  .stat-box.vendidos .num{color:var(--rojo);}
-  .stat-box.reservados .num{color:#b8860b;}
-  .stat-box.disponibles .num{color:var(--verde);}
   .toolbar{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:10px auto; max-width:600px; padding:0 10px;}
   #buscador{flex:1; min-width:200px; padding:10px; border-radius:8px; border:1px solid #ccc;}
-  #logoutBtn{padding:10px 15px; border:none; border-radius:8px; background:var(--naranja); color:var(--negro); font-weight:bold; cursor:pointer;}
   .leyenda{display:flex; justify-content:center; gap:16px; flex-wrap:wrap; font-size:12px; margin-bottom:6px; color:#444;}
   .leyenda span{display:flex; align-items:center; gap:5px;}
   .leyenda i{width:12px; height:12px; border-radius:3px; display:inline-block;}
@@ -40,7 +33,6 @@
   .modal-buttons{display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;}
   .modal-buttons button{flex:1; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; min-width:90px;}
   .btn-guardar{background:var(--verde); color:#fff;}
-  .btn-eliminar{background:var(--rojo); color:#fff;}
   .btn-cerrar{background:#ccc;}
   .loading{text-align:center; padding:20px; color:#888;}
   .barra-seleccion{display:none; position:fixed; bottom:0; left:0; right:0; background:var(--negro); color:#fff; padding:12px 16px; z-index:900; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;}
@@ -51,26 +43,6 @@
   .btn-reservar{background:var(--verde); color:#fff;}
   .btn-cancelar-sel{background:var(--rojo); color:#fff;}
   .alias-box{background:#fff8e1; border:2px dashed #b8860b; border-radius:8px; padding:10px; text-align:center; font-size:18px; font-weight:bold; color:#7a5c00; margin:10px 0;}
-
-  /* --- NUEVO: recuento oculto para el cliente --- */
-  .stats{ display:none; }
-
-  /* --- NUEVO: acceso admin discreto al pie de página --- */
-  .admin-footer{
-    text-align:center;
-    padding:20px 10px 10px 10px;
-    margin-top:20px;
-  }
-  .admin-footer a{
-    font-size:11px;
-    color:#aaa;
-    text-decoration:none;
-    cursor:pointer;
-  }
-  .admin-footer a:hover{
-    color:#888;
-    text-decoration:underline;
-  }
 </style>
 </head>
 <body>
@@ -99,13 +71,6 @@
 
 <div class="precio-banner" id="precioBanner">💵 Valor del número: $5.000</div>
 
-<!-- Recuento oculto para el cliente (queda en el DOM pero no se muestra) -->
-<div class="stats">
-  <div class="stat-box vendidos"><div class="num" id="countVendidos">0</div><div>Vendidos</div></div>
-  <div class="stat-box reservados"><div class="num" id="countReservados">0</div><div>Reservados</div></div>
-  <div class="stat-box disponibles"><div class="num" id="countDisponibles">1000</div><div>Disponibles</div></div>
-</div>
-
 <div class="leyenda">
   <span><i style="background:var(--verde);"></i> Disponible</span>
   <span><i style="background:var(--azul);"></i> Seleccionado</span>
@@ -115,7 +80,6 @@
 
 <div class="toolbar">
   <input id="buscador" type="text" placeholder="Buscar número...">
-  <button id="logoutBtn" style="display:none;" onclick="logout()">Salir</button>
 </div>
 
 <div id="cargando" class="loading">Cargando números...</div>
@@ -126,18 +90,6 @@
   <div class="acciones">
     <button class="btn-reservar" onclick="abrirReserva()">Reservar</button>
     <button class="btn-cancelar-sel" onclick="cancelarSeleccion()">Cancelar</button>
-  </div>
-</div>
-
-<div class="overlay" id="overlayNumero">
-  <div class="modal">
-    <h3 id="tituloModal">Número 000</h3>
-    <div id="infoEstado"></div>
-    <div id="formularioAdmin" style="display:none;">
-      <p><b>Nombre:</b> <span id="verNombre">-</span></p>
-      <p><b>Teléfono:</b> <span id="verContacto">-</span></p>
-    </div>
-    <div class="modal-buttons" id="botonesModal"></div>
   </div>
 </div>
 
@@ -163,33 +115,11 @@
   </div>
 </div>
 
-<div class="overlay" id="overlayLogin">
-  <div class="modal">
-    <h3>Ingreso Administrador</h3>
-    <label>Email</label>
-    <input type="text" id="loginUser" placeholder="nhf@nhfitness.com">
-    <label>Contraseña</label>
-    <input type="password" id="loginPass">
-    <div class="modal-buttons">
-      <button class="btn-guardar" onclick="login()">Ingresar</button>
-      <button class="btn-cerrar" onclick="cerrarLogin()">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<!-- NUEVO: acceso admin discreto al pie de página -->
-<div class="admin-footer">
-  <a onclick="abrirLogin()">Acceso administrador</a>
-</div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore, collection, doc, getDoc, setDoc, onSnapshot, updateDoc, orderBy, query
+  getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, orderBy, query
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAqV6XxYj5HgWmNRXdOKvGa2aeYG-X3Rpc",
@@ -202,14 +132,12 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
 
 const PRECIO_UNITARIO = 5000;
 const MINUTOS_RESERVA = 15;
 
 let numeros = [];
 let seleccionados = [];
-let esAdmin = false;
 
 const q = query(collection(db, "numeros"), orderBy("__name__"));
 onSnapshot(q, (snapshot) => {
@@ -217,27 +145,6 @@ onSnapshot(q, (snapshot) => {
   document.getElementById("cargando").style.display = "none";
   render();
 });
-
-onAuthStateChanged(auth, (user) => {
-  esAdmin = !!user;
-  document.getElementById("logoutBtn").style.display = esAdmin ? "inline-block" : "none";
-
-  // NUEVO: el recuento solo se muestra si es administrador
-  document.querySelector(".stats").style.display = esAdmin ? "flex" : "none";
-
-  seleccionados = [];
-  render();
-});
-
-window.login = function(){
-  const email = document.getElementById("loginUser").value.trim();
-  const pass = document.getElementById("loginPass").value.trim();
-  signInWithEmailAndPassword(auth, email, pass)
-    .then(() => cerrarLogin())
-    .catch((err) => { alert("Usuario o contraseña incorrectos."); console.error(err); });
-};
-
-window.logout = function(){ signOut(auth); };
 
 function estadoDe(n){
   if(n.vendido) return "vendido";
@@ -250,8 +157,6 @@ window.render = function(){
   const filtro = document.getElementById("buscador").value.trim();
   grid.innerHTML = "";
 
-  let vendidos=0, reservados=0, disponibles=0;
-
   numeros.forEach(n=>{
     if(filtro && !n.id.includes(filtro)) return;
     const estado = estadoDe(n);
@@ -263,28 +168,12 @@ window.render = function(){
     grid.appendChild(div);
   });
 
-  numeros.forEach(n=>{
-    const estado = estadoDe(n);
-    if(estado==="vendido") vendidos++;
-    else if(estado==="reservado") reservados++;
-    else disponibles++;
-  });
-
-  document.getElementById("countVendidos").textContent = vendidos;
-  document.getElementById("countReservados").textContent = reservados;
-  document.getElementById("countDisponibles").textContent = disponibles;
-
   actualizarBarraSeleccion();
 };
 
 function onClickNumero(id){
   const n = numeros.find(x=>x.id===id);
   const estado = estadoDe(n);
-
-  if(esAdmin){
-    abrirModalAdmin(n);
-    return;
-  }
 
   if(estado === "disponible"){
     const idx = seleccionados.indexOf(id);
@@ -356,94 +245,7 @@ window.confirmarReserva = async function(){
   }
 };
 
-async function abrirModalAdmin(n){
-  const estado = estadoDe(n);
-  document.getElementById("tituloModal").textContent = "Número " + n.id;
-  document.getElementById("formularioAdmin").style.display = "block";
-
-  document.getElementById("verNombre").textContent = "-";
-  document.getElementById("verContacto").textContent = "-";
-
-  if(estado === "reservado" || estado === "vendido"){
-    try{
-      const snap = await getDoc(doc(db,"compradores_privados",n.id));
-      if(snap.exists()){
-        document.getElementById("verNombre").textContent = snap.data().nombre || "-";
-        document.getElementById("verContacto").textContent = snap.data().contacto || "-";
-      }
-    }catch(err){ console.error(err); }
-  }
-
-  let estadoTexto = "";
-  if(estado==="disponible") estadoTexto = "🟢 Disponible";
-  if(estado==="reservado"){
-    const restante = Math.max(0, Math.ceil((n.reservadoHasta - Date.now())/60000));
-    estadoTexto = `🟡 Reservado — vence en ${restante} min`;
-  }
-  if(estado==="vendido") estadoTexto = "🔴 Vendido";
-  document.getElementById("infoEstado").innerHTML = "<p><b>Estado:</b> "+estadoTexto+"</p>";
-
-  const botones = document.getElementById("botonesModal");
-  botones.innerHTML = "";
-
-  if(estado==="reservado"){
-    const btnConfirmar = document.createElement("button");
-    btnConfirmar.className = "btn-guardar";
-    btnConfirmar.textContent = "✅ Confirmar pago recibido";
-    btnConfirmar.onclick = () => confirmarPagoAdmin(n.id);
-    botones.appendChild(btnConfirmar);
-
-    const btnLiberar = document.createElement("button");
-    btnLiberar.className = "btn-eliminar";
-    btnLiberar.textContent = "Liberar número";
-    btnLiberar.onclick = () => liberarNumeroAdmin(n.id);
-    botones.appendChild(btnLiberar);
-  }
-
-  if(estado==="vendido"){
-    const btnLiberar = document.createElement("button");
-    btnLiberar.className = "btn-eliminar";
-    btnLiberar.textContent = "Anular venta";
-    btnLiberar.onclick = () => liberarNumeroAdmin(n.id);
-    botones.appendChild(btnLiberar);
-  }
-
-  const btnCerrar = document.createElement("button");
-  btnCerrar.className = "btn-cerrar";
-  btnCerrar.textContent = "Cerrar";
-  btnCerrar.onclick = cerrarModalAdmin;
-  botones.appendChild(btnCerrar);
-
-  document.getElementById("overlayNumero").classList.add("active");
-}
-
-async function confirmarPagoAdmin(id){
-  await updateDoc(doc(db,"numeros",id), { vendido: true, reservado: false, reservadoHasta: null });
-  cerrarModalAdmin();
-}
-
-async function liberarNumeroAdmin(id){
-  await updateDoc(doc(db,"numeros",id), { vendido: false, reservado: false, reservadoHasta: null });
-  cerrarModalAdmin();
-}
-
-function cerrarModalAdmin(){
-  document.getElementById("overlayNumero").classList.remove("active");
-}
-
-window.abrirLogin = function(){ document.getElementById("overlayLogin").classList.add("active"); };
-window.cerrarLogin = function(){ document.getElementById("overlayLogin").classList.remove("active"); };
 window.cerrarBienvenida = function(){ document.getElementById("overlayBienvenida").classList.remove("active"); };
-
-setInterval(async ()=>{
-  if(!esAdmin) return;
-  const ahora = Date.now();
-  for(const n of numeros){
-    if(n.reservado && n.reservadoHasta && ahora > n.reservadoHasta){
-      await updateDoc(doc(db,"numeros",n.id), { reservado:false, reservadoHasta:null });
-    }
-  }
-}, 15000);
 
 document.getElementById("buscador").addEventListener("input", render);
 </script>
