@@ -31,7 +31,7 @@
   .seleccionado{background:var(--azul); box-shadow:0 0 0 3px #1a1a1a inset;}
   .overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:999; padding:15px;}
   .overlay.active{display:flex;}
-  .modal{background:#fff; border-radius:12px; padding:20px; width:100%; max-width:380px; max-height:90vh; overflow-y:auto;}
+  .modal{background:#fff; border-radius:12px; padding:24px 20px 20px 20px; width:100%; max-width:380px; max-height:90vh; overflow-y:auto; position:relative;}
   .modal h3{margin-top:0; text-align:center; color:var(--negro);}
   .modal label{display:block; margin-top:10px; font-size:14px; font-weight:bold;}
   .modal input{width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:6px;}
@@ -69,12 +69,25 @@
   .premio-item .valor{font-weight:bold; color:var(--verde); font-size:15px;}
   .sorteo-info{background:#eef3fb; border-left:5px solid #34495e; border-radius:8px; padding:12px 14px; margin-top:16px; font-size:13px; color:#2c3e50; line-height:1.5;}
   .sorteo-info h4{margin:0 0 8px 0; font-size:14px; color:#1a1a1a;}
+
+  /* Botón de cerrar (X) en la esquina de todos los modales */
+  .modal-close-x{position:absolute; top:10px; right:12px; background:none; border:none; font-size:22px; line-height:1; color:#999; cursor:pointer; padding:4px 8px; border-radius:50%; transition:background .2s;}
+  .modal-close-x:hover{background:#f0f0f0; color:#333;}
+
+  /* Formato mejorado del pop-up de la historia */
+  .historia-header{text-align:center; margin-bottom:14px;}
+  .historia-header .emoji-grande{font-size:34px;}
+  .historia-header h3{margin:6px 0 0 0;}
+  .historia-parrafo{font-size:14px; color:#333; line-height:1.6; margin-bottom:14px;}
+  .historia-destacado{background:#fff4e5; border-left:4px solid var(--naranja); padding:10px 14px; border-radius:6px; font-style:italic; color:#7a4a00; margin:16px 0; font-size:14px;}
+  .historia-divisor{border:none; border-top:1px solid #eee; margin:16px 0;}
 </style>
 </head>
 <body>
 
 <div class="overlay active" id="overlayBienvenida">
   <div class="modal" style="text-align:center;">
+    <button class="modal-close-x" onclick="cerrarBienvenida()">✕</button>
     <h3>🏆 ¡Bienvenido a la Rifa NH-Fitness!</h3>
     <p style="font-size:14px; color:#333; margin:15px 0; text-align:left;">
       Esta rifa es un homenaje a Nacho: profesor, guía y ejemplo de superación. Con tu compra ayudás a que NH Fitness siga creciendo y a que Nacho consiga un motocarro para facilitar su trabajo diario.
@@ -127,25 +140,45 @@
   </div>
 </div>
 
-<!-- Modal: Historia completa -->
+<!-- Modal: Historia completa (formato mejorado) -->
 <div class="overlay" id="overlayHistoria">
   <div class="modal">
-    <h3>📖 La historia de Nacho</h3>
-    <div style="font-size:14px; color:#333; line-height:1.5; text-align:left;">
-      <p>Hay personas que enseñan con palabras. Otras enseñan con el ejemplo.</p>
-      <p>Quienes conocen a Nacho saben que nunca fue solamente un profesor de entrenamiento. Siempre fue ese que alentó cuando alguien quería abandonar, el que creyó en sus alumnos cuando ellos mismos habían dejado de creer, el que demostró que la disciplina y la constancia pueden cambiar una vida.</p>
-      <p>Pero hace un tiempo, la vida le puso la prueba más difícil.</p>
-      <p>Un accidente cambió todo. Perdió una pierna, enfrentó meses de internaciones, cirugías y rehabilitación. Lo que para muchos habría significado un final, para él fue el comienzo de una nueva forma de vivir.</p>
-      <p>Porque Nacho nunca dejó que una amputación definiera quién era.</p>
-      <p>Volvió a entrenar. Volvió a enseñar. Volvió a acompañar a cada persona que confía en él. Con una prótesis, con esfuerzo y con la misma pasión de siempre. Porque su propósito siempre fue más grande que cualquier obstáculo.</p>
-      <p>Hoy queremos hacer algo por él.</p>
-      <p>No porque no pueda hacerlo solo, sino porque creemos en todo lo que construyó. Porque NH Fitness es mucho más que un grupo de entrenamiento: es un lugar donde muchas personas encontraron salud, confianza, disciplina y una comunidad que las impulsa a ser mejores.</p>
-      <p>Con esta rifa queremos aportar nuestro granito de arena para que NH Fitness siga creciendo y para ayudar a hacer realidad la compra de un motocarro que acompañe ese crecimiento y facilite el trabajo diario de Nacho.</p>
-      <p>Cada número que comprás no es solo una participación.</p>
-      <p>Es una forma de apoyar un proyecto que transforma vidas, de agradecer a alguien que nunca dejó de dar lo mejor de sí y de demostrar que, cuando una comunidad crece unida, los sueños pesan mucho menos.</p>
-      <p>Gracias por ser parte de esta historia.</p>
-      <p>Porque las grandes transformaciones no las hace una sola persona. Las hace una comunidad que decide caminar unida, incluso cuando el camino parece cuesta arriba.</p>
+    <button class="modal-close-x" onclick="cerrarModal('overlayHistoria')">✕</button>
+    <div class="historia-header">
+      <div class="emoji-grande">💪</div>
+      <h3>La historia de Nacho</h3>
     </div>
+
+    <p class="historia-parrafo">Hay personas que enseñan con palabras. <b>Otras enseñan con el ejemplo.</b></p>
+
+    <p class="historia-parrafo">Quienes conocen a Nacho saben que nunca fue solamente un profesor de entrenamiento. Siempre fue ese que alentó cuando alguien quería abandonar, el que creyó en sus alumnos cuando ellos mismos habían dejado de creer, el que demostró que la disciplina y la constancia pueden cambiar una vida.</p>
+
+    <hr class="historia-divisor">
+
+    <p class="historia-parrafo">Pero hace un tiempo, la vida le puso la prueba más difícil.</p>
+
+    <p class="historia-parrafo">Un accidente cambió todo. Perdió una pierna, enfrentó meses de internaciones, cirugías y rehabilitación. Lo que para muchos habría significado un final, para él fue el comienzo de una nueva forma de vivir.</p>
+
+    <div class="historia-destacado">"Nacho nunca dejó que una amputación definiera quién era."</div>
+
+    <p class="historia-parrafo">Volvió a entrenar. Volvió a enseñar. Volvió a acompañar a cada persona que confía en él. Con una prótesis, con esfuerzo y con la misma pasión de siempre. Porque su propósito siempre fue más grande que cualquier obstáculo.</p>
+
+    <hr class="historia-divisor">
+
+    <p class="historia-parrafo"><b>Hoy queremos hacer algo por él.</b></p>
+
+    <p class="historia-parrafo">No porque no pueda hacerlo solo, sino porque creemos en todo lo que construyó. Porque NH Fitness es mucho más que un grupo de entrenamiento: es un lugar donde muchas personas encontraron salud, confianza, disciplina y una comunidad que las impulsa a ser mejores.</p>
+
+    <p class="historia-parrafo">Con esta rifa queremos aportar nuestro granito de arena para que NH Fitness siga creciendo y para ayudar a hacer realidad la compra de un motocarro que acompañe ese crecimiento y facilite el trabajo diario de Nacho.</p>
+
+    <div class="historia-destacado">Cada número que comprás no es solo una participación. Es una forma de apoyar un proyecto que transforma vidas.</div>
+
+    <p class="historia-parrafo">Es una forma de agradecer a alguien que nunca dejó de dar lo mejor de sí y de demostrar que, cuando una comunidad crece unida, los sueños pesan mucho menos.</p>
+
+    <hr class="historia-divisor">
+
+    <p class="historia-parrafo" style="text-align:center;"><b>Gracias por ser parte de esta historia.</b><br>Porque las grandes transformaciones no las hace una sola persona. Las hace una comunidad que decide caminar unida, incluso cuando el camino parece cuesta arriba. 💛</p>
+
     <div class="modal-buttons">
       <button class="btn-cerrar" style="width:100%;" onclick="cerrarModal('overlayHistoria')">Cerrar</button>
     </div>
@@ -155,6 +188,7 @@
 <!-- Modal: Instagram -->
 <div class="overlay" id="overlayInstagram">
   <div class="modal" style="text-align:center;">
+    <button class="modal-close-x" onclick="cerrarModal('overlayInstagram')">✕</button>
     <h3>📸 Seguinos en Instagram</h3>
     <p style="font-size:14px; color:#333;">Enterate de todas las novedades de la rifa y de NH Fitness</p>
     <div class="modal-buttons" style="flex-direction:column;">
@@ -172,6 +206,7 @@
 <!-- Modal: Premios + información del sorteo -->
 <div class="overlay" id="overlayPremios">
   <div class="modal">
+    <button class="modal-close-x" onclick="cerrarModal('overlayPremios')">✕</button>
     <h3>🏆 Premios</h3>
     <div class="premio-item primero">
       <span class="lugar">🥇 Primer premio</span>
@@ -206,6 +241,7 @@
 
 <div class="overlay" id="overlayReserva">
   <div class="modal">
+    <button class="modal-close-x" onclick="cancelarReserva()">✕</button>
     <h3>Confirmar selección</h3>
     <p style="font-size:14px;">Números elegidos:</p>
     <p style="font-weight:bold; font-size:16px;" id="listaSeleccionados"></p>
