@@ -11,6 +11,7 @@
   header img{max-width:110px; border-radius:10px;}
   header h2{margin:5px 0 0 0; color:var(--naranja);}
   .precio-banner{background:var(--naranja); color:var(--negro); text-align:center; font-weight:bold; padding:8px; font-size:16px;}
+  .instruccion{text-align:center; font-size:14px; color:#555; margin:14px auto 4px; max-width:500px; padding:0 10px;}
   .toolbar{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:10px auto; max-width:600px; padding:0 10px;}
   #buscador{flex:1; min-width:200px; padding:10px; border-radius:8px; border:1px solid #ccc;}
   .leyenda{display:flex; justify-content:center; gap:16px; flex-wrap:wrap; font-size:12px; margin-bottom:6px; color:#444;}
@@ -33,6 +34,7 @@
   .modal-buttons button{flex:1; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; min-width:90px;}
   .btn-guardar{background:var(--verde); color:#fff;}
   .btn-cerrar{background:#ccc;}
+  .btn-secundario{background:none; border:1px solid var(--naranja) !important; color:var(--naranja);}
   .loading{text-align:center; padding:20px; color:#888;}
   .barra-seleccion{display:none; position:fixed; bottom:0; left:0; right:0; background:var(--negro); color:#fff; padding:12px 16px; z-index:900; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;}
   .barra-seleccion.activa{display:flex;}
@@ -42,14 +44,32 @@
   .btn-reservar{background:var(--verde); color:#fff;}
   .btn-cancelar-sel{background:var(--rojo); color:#fff;}
   .alias-box{background:#fff8e1; border:2px dashed #b8860b; border-radius:8px; padding:10px; text-align:center; font-size:18px; font-weight:bold; color:#7a5c00; margin:10px 0;}
+
+  /* Timer flotante de reserva */
+  .timer-flotante{display:none; position:fixed; top:10px; left:50%; transform:translateX(-50%); background:var(--amarillo); color:#1a1a1a; font-weight:bold; padding:10px 18px; border-radius:30px; box-shadow:0 3px 10px rgba(0,0,0,.25); z-index:950; font-size:14px; text-align:center;}
+  .timer-flotante.activo{display:block;}
+
+  /* Toast de notificaciones */
+  .toast-container{position:fixed; bottom:100px; left:50%; transform:translateX(-50%); z-index:1100; display:flex; flex-direction:column; gap:8px; align-items:center;}
+  .toast{background:#1a1a1a; color:#fff; padding:12px 18px; border-radius:8px; font-size:14px; box-shadow:0 3px 10px rgba(0,0,0,.3); opacity:0; animation:toastIn .3s forwards, toastOut .3s forwards 3s; max-width:90vw; text-align:center;}
+  .toast.exito{background:var(--verde);}
+  .toast.error{background:var(--rojo);}
+  .toast.info{background:var(--azul);}
+  @keyframes toastIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+  @keyframes toastOut{from{opacity:1;} to{opacity:0;}}
 </style>
 </head>
 <body>
 
 <div class="overlay active" id="overlayBienvenida">
-  <div class="modal" style="text-align:left;">
-    <h3 style="text-align:center;">🏆 La historia detrás de esta rifa</h3>
-    <div style="font-size:14px; color:#333; line-height:1.5;">
+  <div class="modal" style="text-align:center;">
+    <h3>🏆 ¡Bienvenido a la Rifa NH-Fitness!</h3>
+    <p style="font-size:14px; color:#333; margin:15px 0; text-align:left;">
+      Esta rifa es un homenaje a Nacho: profesor, guía y ejemplo de superación. Con tu compra ayudás a que NH Fitness siga creciendo y a que Nacho consiga un motocarro para facilitar su trabajo diario.
+    </p>
+    <button class="btn-cerrar btn-secundario" style="width:100%; margin-bottom:10px;" onclick="toggleHistoriaCompleta()">📖 Leer la historia completa</button>
+
+    <div id="historiaCompleta" style="display:none; font-size:14px; color:#333; line-height:1.5; text-align:left; margin-bottom:10px;">
       <p>Hay personas que enseñan con palabras. Otras enseñan con el ejemplo.</p>
       <p>Quienes conocen a Nacho saben que nunca fue solamente un profesor de entrenamiento. Siempre fue ese que alentó cuando alguien quería abandonar, el que creyó en sus alumnos cuando ellos mismos habían dejado de creer, el que demostró que la disciplina y la constancia pueden cambiar una vida.</p>
       <p>Pero hace un tiempo, la vida le puso la prueba más difícil.</p>
@@ -64,6 +84,7 @@
       <p>Gracias por ser parte de esta historia.</p>
       <p>Porque las grandes transformaciones no las hace una sola persona. Las hace una comunidad que decide caminar unida, incluso cuando el camino parece cuesta arriba.</p>
     </div>
+
     <div class="modal-buttons">
       <a href="https://www.instagram.com/nh.fitnes?igsh=b2dxdTJuNzlqZTNx" target="_blank" style="flex:1; text-decoration:none;">
         <button class="btn-guardar" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px;">
@@ -84,6 +105,11 @@
 </header>
 
 <div class="precio-banner" id="precioBanner">💵 Valor del número: $5.000</div>
+
+<!-- Timer flotante visible mientras hay una reserva activa -->
+<div class="timer-flotante" id="timerFlotante">⏱ Te quedan <span id="timerTexto">15:00</span> para transferir</div>
+
+<p class="instruccion">👉 Tocá los números que querés comprar. Podés elegir más de uno.</p>
 
 <div class="leyenda">
   <span><i style="background:var(--verde);"></i> Disponible</span>
@@ -128,6 +154,8 @@
     </div>
   </div>
 </div>
+
+<div class="toast-container" id="toastContainer"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -195,9 +223,9 @@ function onClickNumero(id){
     else seleccionados.push(id);
     render();
   } else if(estado === "reservado"){
-    alert("Este número ya fue reservado por otro comprador. Espera a que se libere o elige otro.");
+    mostrarToast("Este número ya fue reservado por otro comprador. Esperá a que se libere o elegí otro.", "error");
   } else {
-    alert("Este número ya fue vendido.");
+    mostrarToast("Este número ya fue vendido.", "error");
   }
 }
 
@@ -230,7 +258,7 @@ window.confirmarReserva = async function(){
   const telefono = document.getElementById("reservaTelefono").value.trim();
 
   if(!nombre || !telefono){
-    alert("Por favor completá tu nombre y teléfono.");
+    mostrarToast("Por favor completá tu nombre y teléfono.", "error");
     return;
   }
 
@@ -248,18 +276,80 @@ window.confirmarReserva = async function(){
         contacto: telefono
       });
     }
+
+    // Guardar la reserva localmente para mostrar el timer flotante
+    localStorage.setItem("reservaVencimiento", vencimiento);
+    localStorage.setItem("reservaNumeros", JSON.stringify(seleccionados));
+    iniciarTimerFlotante();
+
     seleccionados = [];
     document.getElementById("overlayReserva").classList.remove("active");
     document.getElementById("reservaNombre").value = "";
     document.getElementById("reservaTelefono").value = "";
-    alert("✅ Números reservados por 15 minutos. Recordá transferir al alias NH.rifa antes de que venza el tiempo.");
+    mostrarToast("✅ Números reservados por 15 minutos. Recordá transferir al alias NH.rifa.", "exito");
   }catch(err){
-    alert("Ocurrió un error al reservar. Intentá de nuevo.");
+    mostrarToast("Ocurrió un error al reservar. Intentá de nuevo.", "error");
     console.error(err);
   }
 };
 
 window.cerrarBienvenida = function(){ document.getElementById("overlayBienvenida").classList.remove("active"); };
+
+window.toggleHistoriaCompleta = function(){
+  const div = document.getElementById("historiaCompleta");
+  const btn = event.target;
+  if(div.style.display === "none"){
+    div.style.display = "block";
+    btn.textContent = "📖 Ocultar historia completa";
+  } else {
+    div.style.display = "none";
+    btn.textContent = "📖 Leer la historia completa";
+  }
+};
+
+// --- Toast de notificaciones ---
+window.mostrarToast = function(mensaje, tipo){
+  const container = document.getElementById("toastContainer");
+  const toast = document.createElement("div");
+  toast.className = "toast " + (tipo || "info");
+  toast.textContent = mensaje;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3300);
+};
+
+// --- Timer flotante de reserva activa ---
+function iniciarTimerFlotante(){
+  const timerDiv = document.getElementById("timerFlotante");
+  const timerTexto = document.getElementById("timerTexto");
+
+  const actualizar = () => {
+    const vencimiento = parseInt(localStorage.getItem("reservaVencimiento"));
+    if(!vencimiento){
+      timerDiv.classList.remove("activo");
+      return;
+    }
+    const restante = vencimiento - Date.now();
+    if(restante <= 0){
+      timerDiv.classList.remove("activo");
+      localStorage.removeItem("reservaVencimiento");
+      localStorage.removeItem("reservaNumeros");
+      return;
+    }
+    const minutos = Math.floor(restante/60000);
+    const segundos = Math.floor((restante%60000)/1000);
+    timerTexto.textContent = `${minutos}:${segundos.toString().padStart(2,"0")}`;
+    timerDiv.classList.add("activo");
+  };
+
+  actualizar();
+  setInterval(actualizar, 1000);
+}
+
+// Al cargar la página, verificar si ya había una reserva en curso
+const vencimientoGuardado = localStorage.getItem("reservaVencimiento");
+if(vencimientoGuardado && parseInt(vencimientoGuardado) > Date.now()){
+  iniciarTimerFlotante();
+}
 
 document.getElementById("buscador").addEventListener("input", render);
 </script>
