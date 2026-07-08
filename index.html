@@ -4,31 +4,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rifa NH-Fitness</title>
 <style>
-  :root{--naranja:#f7941e; --negro:#1a1a1a; --verde:#2ecc71; --rojo:#e74c3c; --amarillo:#f1c40f; --azul:#3498db;}
+  :root{
+    --neutro:#4a5568;
+    --neutro-oscuro:#374151;
+    --negro:#1a1a1a;
+    --verde:#8fd6ab;
+    --rojo:#e79a9a;
+    --amarillo:#f5dd8a;
+    --azul:#8fc1e3;
+  }
   *{box-sizing:border-box; font-family:'Segoe UI',Arial,sans-serif;}
   body{margin:0; background:#f4f4f4; padding-bottom:90px;}
   header{background:var(--negro); color:#fff; text-align:center; padding:15px; display:flex; flex-direction:column; align-items:center; gap:8px;}
   header img{max-width:110px; border-radius:10px;}
-  header h2{margin:5px 0 0 0; color:var(--naranja);}
-  .precio-banner{background:var(--naranja); color:var(--negro); text-align:center; font-weight:bold; padding:8px; font-size:16px;}
+  header h2{margin:5px 0 0 0; color:var(--neutro);}
+  .precio-banner{background:var(--neutro); color:#fff; text-align:center; font-weight:bold; padding:8px; font-size:16px;}
   .instruccion{text-align:center; font-size:14px; color:#555; margin:14px auto 4px; max-width:500px; padding:0 10px;}
   .botones-info{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:14px auto; max-width:700px; padding:0 10px;}
   .btn-info{padding:10px 16px; border-radius:8px; border:none; font-weight:bold; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px; color:#fff;}
-  .btn-historia{background:var(--naranja); color:var(--negro);}
+  .btn-historia{background:var(--neutro);}
   .btn-instagram-nav{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);}
-  .btn-premios{background:var(--verde);}
+  .btn-premios{background:var(--neutro);}
+  .btn-info:hover{background:var(--neutro-oscuro);}
   .toolbar{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:10px auto; max-width:600px; padding:0 10px;}
   #buscador{flex:1; min-width:200px; padding:10px; border-radius:8px; border:1px solid #ccc;}
   .leyenda{display:flex; justify-content:center; gap:16px; flex-wrap:wrap; font-size:12px; margin-bottom:6px; color:#444;}
   .leyenda span{display:flex; align-items:center; gap:5px;}
   .leyenda i{width:12px; height:12px; border-radius:3px; display:inline-block;}
   .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(58px,1fr)); gap:6px; max-width:1000px; margin:20px auto; padding:0 10px;}
-  .numero{aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-weight:bold; color:#fff; cursor:pointer; font-size:13px; user-select:none; transition:transform .1s; border:2px solid rgba(0,0,0,.15);}
+  .numero{aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-weight:bold; color:#3a3a3a; cursor:pointer; font-size:13px; user-select:none; transition:transform .1s; border:2px solid rgba(0,0,0,.1);}
   .numero:hover{transform:scale(1.08);}
   .disponible{background:var(--verde);}
-  .vendido{background:var(--rojo);}
-  .reservado{background:var(--amarillo); color:#1a1a1a;}
-  .seleccionado{background:var(--azul); box-shadow:0 0 0 3px #1a1a1a inset;}
+  .vendido{background:var(--rojo); color:#5a1f1f;}
+  .reservado{background:var(--amarillo); color:#6b5900;}
+  .seleccionado{background:var(--azul); color:#1a1a1a; box-shadow:0 0 0 3px #37474f inset;}
   .overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:999; padding:15px;}
   .overlay.active{display:flex;}
   .modal{background:#fff; border-radius:12px; padding:24px 20px 20px 20px; width:100%; max-width:380px; max-height:90vh; overflow-y:auto; position:relative;}
@@ -37,49 +46,47 @@
   .modal input{width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:6px;}
   .modal-buttons{display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;}
   .modal-buttons button{flex:1; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; min-width:90px;}
-  .btn-guardar{background:var(--verde); color:#fff;}
+  .btn-guardar{background:var(--neutro); color:#fff;}
   .btn-cerrar{background:#ccc;}
-  .btn-secundario{background:none; border:1px solid var(--naranja) !important; color:var(--naranja);}
+  .btn-secundario{background:none; border:1px solid var(--neutro) !important; color:var(--neutro);}
   .loading{text-align:center; padding:20px; color:#888;}
   .barra-seleccion{display:none; position:fixed; bottom:0; left:0; right:0; background:var(--negro); color:#fff; padding:12px 16px; z-index:900; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;}
   .barra-seleccion.activa{display:flex;}
   .barra-seleccion .info{font-size:14px;}
   .barra-seleccion .acciones{display:flex; gap:8px;}
   .barra-seleccion button{border:none; padding:10px 16px; border-radius:8px; font-weight:bold; cursor:pointer;}
-  .btn-reservar{background:var(--verde); color:#fff;}
-  .btn-cancelar-sel{background:var(--rojo); color:#fff;}
+  .btn-reservar{background:var(--neutro); color:#fff;}
+  .btn-cancelar-sel{background:#c0392b; color:#fff;}
   .alias-box{background:#fff8e1; border:2px dashed #b8860b; border-radius:8px; padding:10px; text-align:center; font-size:18px; font-weight:bold; color:#7a5c00; margin:10px 0;}
 
-  .timer-flotante{display:none; position:fixed; top:10px; left:50%; transform:translateX(-50%); background:var(--amarillo); color:#1a1a1a; font-weight:bold; padding:10px 18px; border-radius:30px; box-shadow:0 3px 10px rgba(0,0,0,.25); z-index:950; font-size:14px; text-align:center;}
+  .timer-flotante{display:none; position:fixed; top:10px; left:50%; transform:translateX(-50%); background:var(--amarillo); color:#6b5900; font-weight:bold; padding:10px 18px; border-radius:30px; box-shadow:0 3px 10px rgba(0,0,0,.25); z-index:950; font-size:14px; text-align:center;}
   .timer-flotante.activo{display:block;}
 
   .toast-container{position:fixed; bottom:100px; left:50%; transform:translateX(-50%); z-index:1100; display:flex; flex-direction:column; gap:8px; align-items:center;}
   .toast{background:#1a1a1a; color:#fff; padding:12px 18px; border-radius:8px; font-size:14px; box-shadow:0 3px 10px rgba(0,0,0,.3); opacity:0; animation:toastIn .3s forwards, toastOut .3s forwards 3s; max-width:90vw; text-align:center;}
-  .toast.exito{background:var(--verde);}
-  .toast.error{background:var(--rojo);}
-  .toast.info{background:var(--azul);}
+  .toast.exito{background:#4a8f6b;}
+  .toast.error{background:#c0392b;}
+  .toast.info{background:var(--neutro);}
   @keyframes toastIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
   @keyframes toastOut{from{opacity:1;} to{opacity:0;}}
 
-  .premio-item{display:flex; justify-content:space-between; align-items:center; background:#f9f9f9; border-radius:8px; padding:12px 14px; margin-bottom:10px; border-left:5px solid var(--naranja);}
+  .premio-item{display:flex; justify-content:space-between; align-items:center; background:#f9f9f9; border-radius:8px; padding:12px 14px; margin-bottom:10px; border-left:5px solid var(--neutro);}
   .premio-item.primero{border-left-color:#f1c40f;}
   .premio-item.segundo{border-left-color:#bdc3c7;}
   .premio-item.tercero{border-left-color:#cd7f32;}
   .premio-item .lugar{font-weight:bold; color:var(--negro);}
-  .premio-item .valor{font-weight:bold; color:var(--verde); font-size:15px;}
+  .premio-item .valor{font-weight:bold; color:var(--neutro-oscuro); font-size:15px;}
   .sorteo-info{background:#eef3fb; border-left:5px solid #34495e; border-radius:8px; padding:12px 14px; margin-top:16px; font-size:13px; color:#2c3e50; line-height:1.5;}
   .sorteo-info h4{margin:0 0 8px 0; font-size:14px; color:#1a1a1a;}
 
-  /* Botón de cerrar (X) en la esquina de todos los modales */
   .modal-close-x{position:absolute; top:10px; right:12px; background:none; border:none; font-size:22px; line-height:1; color:#999; cursor:pointer; padding:4px 8px; border-radius:50%; transition:background .2s;}
   .modal-close-x:hover{background:#f0f0f0; color:#333;}
 
-  /* Formato mejorado del pop-up de la historia */
   .historia-header{text-align:center; margin-bottom:14px;}
   .historia-header .emoji-grande{font-size:34px;}
   .historia-header h3{margin:6px 0 0 0;}
   .historia-parrafo{font-size:14px; color:#333; line-height:1.6; margin-bottom:14px;}
-  .historia-destacado{background:#fff4e5; border-left:4px solid var(--naranja); padding:10px 14px; border-radius:6px; font-style:italic; color:#7a4a00; margin:16px 0; font-size:14px;}
+  .historia-destacado{background:#f2f2f2; border-left:4px solid var(--neutro); padding:10px 14px; border-radius:6px; font-style:italic; color:#4a4a4a; margin:16px 0; font-size:14px;}
   .historia-divisor{border:none; border-top:1px solid #eee; margin:16px 0;}
 </style>
 </head>
@@ -140,7 +147,7 @@
   </div>
 </div>
 
-<!-- Modal: Historia completa (formato mejorado) -->
+<!-- Modal: Historia completa -->
 <div class="overlay" id="overlayHistoria">
   <div class="modal">
     <button class="modal-close-x" onclick="cerrarModal('overlayHistoria')">✕</button>
@@ -246,7 +253,7 @@
     <p style="font-size:14px;">Números elegidos:</p>
     <p style="font-weight:bold; font-size:16px;" id="listaSeleccionados"></p>
     <p style="font-size:14px;">Monto total a transferir:</p>
-    <p style="font-weight:bold; font-size:20px; color:var(--rojo);" id="montoTotal">$0</p>
+    <p style="font-weight:bold; font-size:20px; color:var(--neutro-oscuro);" id="montoTotal">$0</p>
     <div class="alias-box">Alias: NH.rifa</div>
     <label>Nombre y apellido</label>
     <input type="text" id="reservaNombre" placeholder="Ej: Juan Pérez">
