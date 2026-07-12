@@ -60,8 +60,10 @@
   .btn-cancelar-sel{background:#c0392b; color:#fff;}
   .alias-box{background:#fff8e1; border:2px dashed #b8860b; border-radius:8px; padding:10px; text-align:center; font-size:18px; font-weight:bold; color:#7a5c00; margin:10px 0;}
 
-  .timer-flotante{display:none; position:fixed; top:10px; left:50%; transform:translateX(-50%); background:var(--amarillo); color:#6b5900; font-weight:bold; padding:10px 18px; border-radius:30px; box-shadow:0 3px 10px rgba(0,0,0,.25); z-index:950; font-size:14px; text-align:center;}
-  .timer-flotante.activo{display:block;}
+  .timer-flotante{display:none; position:fixed; top:10px; left:50%; transform:translateX(-50%); background:var(--amarillo); color:#6b5900; font-weight:bold; padding:10px 18px; border-radius:30px; box-shadow:0 3px 10px rgba(0,0,0,.25); z-index:950; font-size:13px; text-align:center; max-width:92vw;}
+  .timer-flotante.activo{display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;}
+
+  .btn-ig-dm{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color:#fff; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:bold; text-decoration:none; white-space:nowrap;}
 
   .toast-container{position:fixed; bottom:100px; left:50%; transform:translateX(-50%); z-index:1100; display:flex; flex-direction:column; gap:8px; align-items:center;}
   .toast{background:#1a1a1a; color:#fff; padding:12px 18px; border-radius:8px; font-size:14px; box-shadow:0 3px 10px rgba(0,0,0,.3); opacity:0; animation:toastIn .3s forwards, toastOut .3s forwards 3s; max-width:90vw; text-align:center;}
@@ -114,7 +116,10 @@
 
 <div class="precio-banner" id="precioBanner">💵 Valor del número: $5.000</div>
 
-<div class="timer-flotante" id="timerFlotante">⏱ Te quedan <span id="timerTexto">15:00</span> para transferir</div>
+<div class="timer-flotante" id="timerFlotante">
+  <span>⏱ Tenés 15 minutos para transferir al alias <b>NH.rifa</b></span>
+  <a href="https://ig.me/m/nh.fitnes" target="_blank" class="btn-ig-dm">📩 Enviar comprobante</a>
+</div>
 
 <div class="botones-info">
   <button class="btn-info btn-historia" onclick="abrirModal('overlayHistoria')">📖 CONOCE LA HISTORIA DE NH</button>
@@ -258,6 +263,9 @@
     <p style="font-size:14px;">Monto total a transferir:</p>
     <p style="font-weight:bold; font-size:20px; color:var(--neutro-oscuro);" id="montoTotal">$0</p>
     <div class="alias-box">Alias: NH.rifa</div>
+    <a href="https://ig.me/m/nh.fitnes" target="_blank" style="text-decoration:none;">
+      <button type="button" class="btn-instagram-nav" style="width:100%; padding:10px; border-radius:8px; border:none; font-weight:bold; cursor:pointer; color:#fff; margin-bottom:6px;">📩 Enviar comprobante por Instagram Directo</button>
+    </a>
     <label>Nombre y apellido</label>
     <input type="text" id="reservaNombre" placeholder="Ej: Juan Pérez">
     <label>Teléfono</label>
@@ -380,29 +388,32 @@ window.confirmarReserva = async function(){
   }
 
   const vencimiento = Date.now() + MINUTOS_RESERVA*60*1000;
+  const reservaId = "r_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
 
   try{
     for(const id of seleccionados){
       await updateDoc(doc(db,"numeros",id), {
         vendido: false,
         reservado: true,
-        reservadoHasta: vencimiento
+        reservadoHasta: vencimiento,
+        reservaId: reservaId
       });
       await setDoc(doc(db,"compradores_privados",id), {
         nombre: nombre,
-        contacto: telefono
+        contacto: telefono,
+        reservaId: reservaId
       });
     }
 
     localStorage.setItem("reservaVencimiento", vencimiento);
     localStorage.setItem("reservaNumeros", JSON.stringify(seleccionados));
-    iniciarTimerFlotante();
+    mostrarAvisoReserva(vencimiento);
 
     seleccionados = [];
     document.getElementById("overlayReserva").classList.remove("active");
     document.getElementById("reservaNombre").value = "";
     document.getElementById("reservaTelefono").value = "";
-    mostrarToast("✅ Números reservados por 15 minutos. Recordá transferir al alias NH.rifa.", "exito");
+    mostrarToast("✅ Números reservados por 15 minutos. Recordá transferir al alias NH.rifa y enviar el comprobante por Instagram.", "exito");
   }catch(err){
     mostrarToast("Ocurrió un error al reservar. Intentá de nuevo.", "error");
     console.error(err);
@@ -423,36 +434,29 @@ window.mostrarToast = function(mensaje, tipo){
   setTimeout(() => toast.remove(), 3300);
 };
 
-function iniciarTimerFlotante(){
+// Aviso estático (sin cuenta regresiva): se muestra mientras haya una reserva activa
+// y se oculta automáticamente al vencer el plazo de 15 minutos.
+function mostrarAvisoReserva(vencimiento){
   const timerDiv = document.getElementById("timerFlotante");
-  const timerTexto = document.getElementById("timerTexto");
-
-  const actualizar = () => {
-    const vencimiento = parseInt(localStorage.getItem("reservaVencimiento"));
-    if(!vencimiento){
-      timerDiv.classList.remove("activo");
-      return;
-    }
-    const restante = vencimiento - Date.now();
-    if(restante <= 0){
+  const restante = vencimiento - Date.now();
+  if(restante <= 0){
+    timerDiv.classList.remove("activo");
+    return;
+  }
+  timerDiv.classList.add("activo");
+  setTimeout(() => {
+    const vencimientoActual = parseInt(localStorage.getItem("reservaVencimiento") || "0");
+    if(Date.now() >= vencimientoActual){
       timerDiv.classList.remove("activo");
       localStorage.removeItem("reservaVencimiento");
       localStorage.removeItem("reservaNumeros");
-      return;
     }
-    const minutos = Math.floor(restante/60000);
-    const segundos = Math.floor((restante%60000)/1000);
-    timerTexto.textContent = `${minutos}:${segundos.toString().padStart(2,"0")}`;
-    timerDiv.classList.add("activo");
-  };
-
-  actualizar();
-  setInterval(actualizar, 1000);
+  }, restante);
 }
 
-const vencimientoGuardado = localStorage.getItem("reservaVencimiento");
-if(vencimientoGuardado && parseInt(vencimientoGuardado) > Date.now()){
-  iniciarTimerFlotante();
+const vencimientoGuardado = parseInt(localStorage.getItem("reservaVencimiento") || "0");
+if(vencimientoGuardado && vencimientoGuardado > Date.now()){
+  mostrarAvisoReserva(vencimientoGuardado);
 }
 
 document.getElementById("buscador").addEventListener("input", render);
