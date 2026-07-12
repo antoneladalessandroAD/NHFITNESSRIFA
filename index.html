@@ -304,7 +304,7 @@
     </div>
 
     <p style="font-size:12px; color:#888; margin-top:14px; text-align:center;">
-      ⏱ Tenés <b>15 minutos</b> para transferir. Si el pago no es confirmado por el administrador en ese tiempo, los números se liberan automáticamente. Podés volver a esta página en cualquier momento y tocar el aviso amarillo de arriba para ver estas instrucciones de nuevo.
+      ⏱ Te pedimos que transfieras dentro de los <b>15 minutos</b>. El administrador revisará tu pago manualmente y confirmará tu número apenas lo reciba — los números reservados no se liberan solos. Podés volver a esta página en cualquier momento y tocar el aviso amarillo de arriba para ver estas instrucciones de nuevo.
     </p>
 
     <div class="modal-buttons">
@@ -342,7 +342,7 @@
     <a href="https://ig.me/m/nh.fitnes" target="_blank" class="btn-ig-directo">📩 Enviar comprobante por Instagram Directo</a>
 
     <p style="font-size:12px; color:#888; margin-top:14px; text-align:center;">
-      ⏱ Recordá que tenés 15 minutos desde el momento de la reserva para transferir. Si el administrador no confirma el pago en ese plazo, los números se liberan automáticamente.
+      ⏱ Te pedimos que transfieras dentro de los 15 minutos desde la reserva. El administrador confirmará tu pago manualmente apenas lo reciba — tu número queda a tu nombre hasta que el administrador lo revise.
     </p>
 
     <div class="modal-buttons">
@@ -382,6 +382,7 @@ onSnapshot(q, (snapshot) => {
   numeros = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
   document.getElementById("cargando").style.display = "none";
   render();
+  revisarEstadoReservaLocal();
 });
 
 function estadoDe(n){
@@ -486,12 +487,12 @@ window.confirmarReserva = async function(){
 
     localStorage.setItem("reservaVencimiento", vencimiento);
     localStorage.setItem("reservaNumeros", JSON.stringify(seleccionados));
-    activarAvisoFlotante(vencimiento);
+    activarAvisoFlotante();
 
     document.getElementById("overlayReserva").classList.remove("active");
     document.getElementById("reservaNombre").value = "";
     document.getElementById("reservaTelefono").value = "";
-    mostrarToast("✅ Números reservados por 15 minutos. Podés volver a esta página cuando quieras y tocar el aviso amarillo de arriba para ver de nuevo cómo enviar el comprobante.", "exito");
+    mostrarToast("✅ Números reservados. Recordá transferir y enviar el comprobante — el administrador confirmará tu pago manualmente.", "exito");
 
     seleccionados = [];
   }catch(err){
@@ -514,25 +515,15 @@ window.mostrarToast = function(mensaje, tipo){
   setTimeout(() => toast.remove(), 3300);
 };
 
-// Aviso flotante persistente: se muestra mientras haya una reserva activa
-// (sobrevive a recargas de página y a volver más tarde, gracias a localStorage).
-// Al tocarlo, reabre el modal "Mi reserva pendiente" con alias + botón de Instagram.
-function activarAvisoFlotante(vencimiento){
+function activarAvisoFlotante(){
   const aviso = document.getElementById("avisoFlotante");
-  const restante = vencimiento - Date.now();
-  if(restante <= 0){
-    aviso.classList.remove("activo");
-    return;
-  }
   aviso.classList.add("activo");
-  setTimeout(() => {
-    const vencimientoActual = parseInt(localStorage.getItem("reservaVencimiento") || "0");
-    if(Date.now() >= vencimientoActual){
-      aviso.classList.remove("activo");
-      localStorage.removeItem("reservaVencimiento");
-      localStorage.removeItem("reservaNumeros");
-    }
-  }, restante);
+}
+
+function desactivarAvisoFlotante(){
+  const aviso = document.getElementById("avisoFlotante");
+  aviso.classList.remove("activo");
+  document.getElementById("overlayMiReserva").classList.remove("active");
 }
 
 window.abrirMiReserva = function(){
@@ -543,11 +534,54 @@ window.abrirMiReserva = function(){
   document.getElementById("overlayMiReserva").classList.add("active");
 };
 
-// Al cargar la página, si hay una reserva vigente guardada en este navegador,
-// se reactiva el aviso flotante automáticamente (aunque se haya cerrado el modal o recargado la página).
-const vencimientoGuardado = parseInt(localStorage.getItem("reservaVencimiento") || "0");
-if(vencimientoGuardado && vencimientoGuardado > Date.now()){
-  activarAvisoFlotante(vencimientoGuardado);
+// Revisa en tiempo real (cada vez que llegan datos nuevos de Firestore) el estado
+// de los números que este comprador reservó. Si el administrador ya los confirmó
+// como vendidos, o los liberó/canceló, el aviso de "reserva pendiente" desaparece
+// automáticamente y se le avisa al comprador con un toast, sin que tenga que hacer nada.
+let ultimoEstadoNotificado = null;
+
+function revisarEstadoReservaLocal(){
+  const numerosGuardadosRaw = localStorage.getItem("reservaNumeros");
+  if(!numerosGuardadosRaw) return;
+
+  const numerosGuardados = JSON.parse(numerosGuardadosRaw);
+  if(!numerosGuardados || numerosGuardados.length === 0) return;
+
+  const numerosEnBase = numerosGuardados.map(id => numeros.find(n => n.id === id)).filter(Boolean);
+
+  // Si por algún motivo no encontramos los números en la base, no hacemos nada todavía.
+  if(numerosEnBase.length === 0) return;
+
+  const todosVendidos = numerosEnBase.every(n => n.vendido);
+  const ningunoReservadoNiVendido = numerosEnBase.every(n => !n.reservado && !n.vendido);
+
+  if(todosVendidos){
+    if(ultimoEstadoNotificado !== "confirmado"){
+      mostrarToast("🎉 ¡Tu pago fue confirmado! Ya sos parte de la Rifa NH-Fitness. ¡Mucha suerte!", "exito");
+      ultimoEstadoNotificado = "confirmado";
+    }
+    desactivarAvisoFlotante();
+    localStorage.removeItem("reservaVencimiento");
+    localStorage.removeItem("reservaNumeros");
+  } else if(ningunoReservadoNiVendido){
+    if(ultimoEstadoNotificado !== "liberado"){
+      mostrarToast("⚠ Tu reserva fue liberada por el administrador. Si ya transferiste, escribinos por Instagram.", "info");
+      ultimoEstadoNotificado = "liberado";
+    }
+    desactivarAvisoFlotante();
+    localStorage.removeItem("reservaVencimiento");
+    localStorage.removeItem("reservaNumeros");
+  } else {
+    // Todavía sigue reservado (pendiente de aprobación) — mantenemos el aviso visible.
+    activarAvisoFlotante();
+  }
+}
+
+// Al cargar la página, si hay una reserva guardada en este navegador, se reactiva el aviso flotante
+// (la primera verificación real contra la base la hace revisarEstadoReservaLocal() al llegar el primer snapshot).
+const numerosGuardadosInicio = localStorage.getItem("reservaNumeros");
+if(numerosGuardadosInicio && JSON.parse(numerosGuardadosInicio).length > 0){
+  activarAvisoFlotante();
 }
 
 document.getElementById("buscador").addEventListener("input", render);
