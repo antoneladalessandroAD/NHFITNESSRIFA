@@ -272,8 +272,10 @@ function cerrarModalAdmin(){
   document.getElementById("overlayNumero").classList.remove("active");
 }
 
-// Exportar a Excel (CSV) el listado de números VENDIDOS y PENDIENTES DE APROBACIÓN,
-// cada uno en su propia sección bien diferenciada, con datos del comprador y totales.
+// Exportar a Excel real (formato HTML-table reconocido nativamente por Excel).
+// Con este método las columnas quedan SIEMPRE bien separadas, sin importar
+// la configuración regional del Excel de quien lo abra (a diferencia del CSV,
+// que depende de si el separador esperado es coma o punto y coma).
 window.exportarExcel = async function(){
   const vendidos = numeros.filter(n => n.vendido);
   const pendientes = numeros.filter(n => n.reservado);
@@ -282,9 +284,6 @@ window.exportarExcel = async function(){
     alert("Todavía no hay números vendidos ni pendientes de aprobación para exportar.");
     return;
   }
-
-  const SEP = ";";
-  const escapar = (valor) => `"${String(valor).replace(/"/g,'""')}"`;
 
   async function obtenerDatosComprador(n){
     try{
@@ -312,37 +311,103 @@ window.exportarExcel = async function(){
     return { ...base, vence: restanteMin > 0 ? restanteMin + " min" : "Plazo vencido" };
   }))).sort((a,b) => a.numero.localeCompare(b.numero));
 
-  const filas = [];
-
-  filas.push(["=== NÚMEROS VENDIDOS (PAGO CONFIRMADO) ==="].map(escapar).join(SEP));
-  filas.push(["Número","Nombre y apellido","Teléfono","Monto pagado","ID de reserva"].map(escapar).join(SEP));
-  datosVendidos.forEach(c => {
-    filas.push([c.numero, c.nombre, c.telefono, c.monto, c.reservaId].map(escapar).join(SEP));
-  });
   const totalVendidoRecaudado = datosVendidos.length * PRECIO_UNITARIO;
-  filas.push(["TOTAL VENDIDOS", datosVendidos.length, "", totalVendidoRecaudado, ""].map(escapar).join(SEP));
-
-  filas.push("");
-  filas.push("");
-
-  filas.push(["=== NÚMEROS PENDIENTES DE APROBACIÓN (RESERVADOS, ESPERANDO CONFIRMACIÓN MANUAL DEL ADMIN) ==="].map(escapar).join(SEP));
-  filas.push(["Número","Nombre y apellido","Teléfono","Monto a cobrar","ID de reserva","Estado del plazo"].map(escapar).join(SEP));
-  datosPendientes.forEach(c => {
-    filas.push([c.numero, c.nombre, c.telefono, c.monto, c.reservaId, c.vence].map(escapar).join(SEP));
-  });
   const totalPendienteMonto = datosPendientes.length * PRECIO_UNITARIO;
-  filas.push(["TOTAL PENDIENTES", datosPendientes.length, "", totalPendienteMonto, "", ""].map(escapar).join(SEP));
 
-  const csvContent = filas.join("\r\n");
-  const csvConBom = "\ufeff" + csvContent;
+  const estiloTitulo = "background:#1a1a1a; color:#fff; font-weight:bold; font-size:14px; padding:8px;";
+  const estiloHeader = "background:#e0e0e0; font-weight:bold; padding:6px; border:1px solid #ccc;";
+  const estiloCelda = "padding:6px; border:1px solid #ccc;";
+  const estiloTotal = "background:#fff3cd; font-weight:bold; padding:6px; border:1px solid #ccc;";
 
-  const blob = new Blob([csvConBom], { type: "text/csv;charset=utf-8;" });
+  let filasVendidos = datosVendidos.map(c => `
+    <tr>
+      <td style="${estiloCelda}">${c.numero}</td>
+      <td style="${estiloCelda}">${c.nombre}</td>
+      <td style="${estiloCelda}">${c.telefono}</td>
+      <td style="${estiloCelda}">${c.monto}</td>
+      <td style="${estiloCelda}">${c.reservaId}</td>
+    </tr>
+  `).join("");
+
+  let filasPendientes = datosPendientes.map(c => `
+    <tr>
+      <td style="${estiloCelda}">${c.numero}</td>
+      <td style="${estiloCelda}">${c.nombre}</td>
+      <td style="${estiloCelda}">${c.telefono}</td>
+      <td style="${estiloCelda}">${c.monto}</td>
+      <td style="${estiloCelda}">${c.reservaId}</td>
+      <td style="${estiloCelda}">${c.vence}</td>
+    </tr>
+  `).join("");
+
+  const htmlExcel = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="UTF-8">
+      <!--[if gte mso 9]>
+      <xml>
+        <x:ExcelWorkbook>
+          <x:ExcelWorksheets>
+            <x:ExcelWorksheet>
+              <x:Name>Rifa NH</x:Name>
+              <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+            </x:ExcelWorksheet>
+          </x:ExcelWorksheets>
+        </x:ExcelWorkbook>
+      </xml>
+      <![endif]-->
+    </head>
+    <body>
+      <table border="1" cellspacing="0" cellpadding="0" style="border-collapse:collapse; font-family:Arial, sans-serif; font-size:13px;">
+        <tr><td colspan="6" style="${estiloTitulo}">NÚMEROS VENDIDOS (PAGO CONFIRMADO)</td></tr>
+        <tr>
+          <th style="${estiloHeader}">Número</th>
+          <th style="${estiloHeader}">Nombre y apellido</th>
+          <th style="${estiloHeader}">Teléfono</th>
+          <th style="${estiloHeader}">Monto pagado</th>
+          <th style="${estiloHeader}">ID de reserva</th>
+          <th style="${estiloHeader}"></th>
+        </tr>
+        ${filasVendidos}
+        <tr>
+          <td style="${estiloTotal}">TOTAL VENDIDOS</td>
+          <td style="${estiloTotal}">${datosVendidos.length}</td>
+          <td style="${estiloTotal}"></td>
+          <td style="${estiloTotal}">${totalVendidoRecaudado}</td>
+          <td style="${estiloTotal}"></td>
+          <td style="${estiloTotal}"></td>
+        </tr>
+        <tr><td colspan="6" style="height:20px; border:none;"></td></tr>
+        <tr><td colspan="6" style="${estiloTitulo}">NÚMEROS PENDIENTES DE APROBACIÓN (RESERVADOS, ESPERANDO CONFIRMACIÓN MANUAL)</td></tr>
+        <tr>
+          <th style="${estiloHeader}">Número</th>
+          <th style="${estiloHeader}">Nombre y apellido</th>
+          <th style="${estiloHeader}">Teléfono</th>
+          <th style="${estiloHeader}">Monto a cobrar</th>
+          <th style="${estiloHeader}">ID de reserva</th>
+          <th style="${estiloHeader}">Estado del plazo</th>
+        </tr>
+        ${filasPendientes}
+        <tr>
+          <td style="${estiloTotal}">TOTAL PENDIENTES</td>
+          <td style="${estiloTotal}">${datosPendientes.length}</td>
+          <td style="${estiloTotal}"></td>
+          <td style="${estiloTotal}">${totalPendienteMonto}</td>
+          <td style="${estiloTotal}"></td>
+          <td style="${estiloTotal}"></td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  const blob = new Blob(["\ufeff" + htmlExcel], { type: "application/vnd.ms-excel;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
 
   const fecha = new Date().toISOString().slice(0,10);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `rifa_nh_vendidos_y_pendientes_${fecha}.csv`;
+  a.download = `rifa_nh_vendidos_y_pendientes_${fecha}.xls`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
