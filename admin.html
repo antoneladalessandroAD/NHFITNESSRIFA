@@ -169,7 +169,6 @@ window.render = function(){
   filtroEstadoActual = document.getElementById("filtroEstado").value;
   grid.innerHTML = "";
 
-  // Resaltar visualmente la cajita de estadística activa
   ["statVendidos","statReservados","statDisponibles","statRecaudado"].forEach(id => {
     document.getElementById(id).classList.remove("activo");
   });
