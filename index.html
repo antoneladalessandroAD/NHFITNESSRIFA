@@ -297,7 +297,7 @@
   </div>
 </div>
 
-<!-- Modal: Reserva (1-Números 2-Datos 3-Transferencia 4-Comprobante 5-WhatsApp) -->
+<!-- Modal: Reserva -->
 <div class="overlay" id="overlayReserva">
   <div class="modal">
     <button class="modal-close-x" onclick="cancelarReserva()">✕</button>
@@ -408,7 +408,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, orderBy, query
+  getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, orderBy, query, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -586,6 +586,7 @@ function agregarAlHistorial(idsNuevos, reservaId){
   localStorage.setItem("historialNumeros", JSON.stringify(historial));
 }
 
+// ===== FUNCIÓN CORREGIDA: escritura atómica con writeBatch =====
 window.confirmarReserva = async function(){
   const nombre = document.getElementById("reservaNombre").value.trim();
   const telefono = document.getElementById("reservaTelefono").value.trim();
@@ -595,23 +596,48 @@ window.confirmarReserva = async function(){
     return;
   }
 
+  if(seleccionados.length === 0){
+    mostrarToast("No seleccionaste ningún número.", "error");
+    return;
+  }
+
+  // Verificación extra: que ningún número seleccionado haya sido tomado
+  // por otro usuario justo antes de confirmar (protección de última hora)
+  const algunoNoDisponible = seleccionados.some(id => {
+    const n = numeros.find(x => x.id === id);
+    return !n || n.reservado || n.vendido;
+  });
+  if(algunoNoDisponible){
+    mostrarToast("Alguno de los números que elegiste ya no está disponible. Por favor, volvé a seleccionar.", "error");
+    seleccionados = [];
+    render();
+    document.getElementById("overlayReserva").classList.remove("active");
+    return;
+  }
+
   const vencimiento = Date.now() + MINUTOS_RESERVA*60*1000;
   const reservaId = "r_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
 
   try{
-    for(const id of seleccionados){
-      await updateDoc(doc(db,"numeros",id), {
+    const batch = writeBatch(db);
+
+    seleccionados.forEach(id => {
+      batch.update(doc(db,"numeros",id), {
         vendido: false,
         reservado: true,
         reservadoHasta: vencimiento,
         reservaId: reservaId
       });
-      await setDoc(doc(db,"compradores_privados",id), {
+      batch.set(doc(db,"compradores_privados",id), {
         nombre: nombre,
         contacto: telefono,
         reservaId: reservaId
       });
-    }
+    });
+
+    // ✅ Todo se escribe en un único commit atómico:
+    // o se guardan TODOS los números, o no se guarda NINGUNO.
+    await batch.commit();
 
     localStorage.setItem("reservaVencimiento", vencimiento);
     localStorage.setItem("reservaNumeros", JSON.stringify(seleccionados));
@@ -625,8 +651,12 @@ window.confirmarReserva = async function(){
     mostrarToast("✅ Números reservados. Recordá transferir y enviar el comprobante — el administrador confirmará tu pago manualmente.", "exito");
 
     seleccionados = [];
+    render();
+
   }catch(err){
-    mostrarToast("Ocurrió un error al reservar. Intentá de nuevo.", "error");
+    // Gracias al batch, si esto falla NO queda ningún número
+    // reservado a medias en Firestore.
+    mostrarToast("No se pudo completar la reserva (es posible que alguien haya tomado uno de estos números justo antes). Por favor, volvé a intentarlo.", "error");
     console.error(err);
   }
 };
