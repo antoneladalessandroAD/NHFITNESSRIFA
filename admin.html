@@ -63,7 +63,7 @@
 
   <div class="toolbar">
     <input id="buscador" type="text" placeholder="Buscar número...">
-    <button id="exportBtn" onclick="exportarExcel()">📥 Exportar Excel (vendidos)</button>
+    <button id="exportBtn" onclick="exportarExcel()">📥 Exportar Excel (vendidos + pendientes)</button>
     <button id="logoutBtn" onclick="logout()">Salir</button>
   </div>
 
@@ -174,7 +174,6 @@ window.render = function(){
 async function abrirModalAdmin(n){
   const estado = estadoDe(n);
 
-  // Buscar todos los números del mismo grupo de reserva (si existe reservaId)
   let grupo = [n];
   if((estado === "reservado" || estado === "vendido") && n.reservaId){
     grupo = numeros.filter(x => x.reservaId === n.reservaId);
@@ -203,7 +202,9 @@ async function abrirModalAdmin(n){
   if(estado==="disponible") estadoTexto = "🟢 Disponible";
   if(estado==="reservado"){
     const restante = Math.max(0, Math.ceil((n.reservadoHasta - Date.now())/60000));
-    estadoTexto = `🟡 Reservado — vence en ${restante} min`;
+    estadoTexto = restante > 0
+      ? `🟡 Reservado — dentro del plazo de 15 min (quedan ${restante} min)`
+      : `🟡 Reservado — el plazo de 15 min ya venció, esperando que lo liberes o confirmes el pago`;
   }
   if(estado==="vendido") estadoTexto = "🔴 Vendido";
   document.getElementById("infoEstado").innerHTML = "<p><b>Estado:</b> "+estadoTexto+"</p>";
@@ -271,68 +272,82 @@ function cerrarModalAdmin(){
   document.getElementById("overlayNumero").classList.remove("active");
 }
 
-// Exportar a Excel (CSV) el listado de números vendidos con datos del comprador
+// Exportar a Excel (CSV) el listado de números VENDIDOS y PENDIENTES DE APROBACIÓN,
+// cada uno en su propia sección bien diferenciada, con datos del comprador y totales.
 window.exportarExcel = async function(){
   const vendidos = numeros.filter(n => n.vendido);
+  const pendientes = numeros.filter(n => n.reservado);
 
-  if(vendidos.length === 0){
-    alert("Todavía no hay números vendidos para exportar.");
+  if(vendidos.length === 0 && pendientes.length === 0){
+    alert("Todavía no hay números vendidos ni pendientes de aprobación para exportar.");
     return;
   }
 
-  const filas = [["Numero","Nombre","Telefono","ID de reserva"]];
+  const SEP = ";";
+  const escapar = (valor) => `"${String(valor).replace(/"/g,'""')}"`;
 
-  const datosCompradores = await Promise.all(
-    vendidos.map(async (n) => {
-      try{
-        const snap = await getDoc(doc(db,"compradores_privados", n.id));
-        const data = snap.exists() ? snap.data() : {};
-        return {
-          numero: n.id,
-          nombre: data.nombre || "-",
-          telefono: data.contacto || "-",
-          reservaId: data.reservaId || n.reservaId || "-"
-        };
-      }catch(err){
-        console.error(err);
-        return { numero: n.id, nombre:"-", telefono:"-", reservaId:"-" };
-      }
-    })
-  );
+  async function obtenerDatosComprador(n){
+    try{
+      const snap = await getDoc(doc(db,"compradores_privados", n.id));
+      const data = snap.exists() ? snap.data() : {};
+      return {
+        numero: n.id,
+        nombre: data.nombre || "Sin datos",
+        telefono: data.contacto || "Sin datos",
+        reservaId: data.reservaId || n.reservaId || "-",
+        monto: PRECIO_UNITARIO
+      };
+    }catch(err){
+      console.error(err);
+      return { numero: n.id, nombre:"Sin datos", telefono:"Sin datos", reservaId:"-", monto:PRECIO_UNITARIO };
+    }
+  }
 
-  datosCompradores.sort((a,b) => a.numero.localeCompare(b.numero));
+  const datosVendidos = (await Promise.all(vendidos.map(obtenerDatosComprador)))
+    .sort((a,b) => a.numero.localeCompare(b.numero));
 
-  datosCompradores.forEach(c => {
-    filas.push([c.numero, c.nombre, c.telefono, c.reservaId]);
+  const datosPendientes = (await Promise.all(pendientes.map(async (n) => {
+    const base = await obtenerDatosComprador(n);
+    const restanteMin = Math.max(0, Math.ceil((n.reservadoHasta - Date.now())/60000));
+    return { ...base, vence: restanteMin > 0 ? restanteMin + " min" : "Plazo vencido" };
+  }))).sort((a,b) => a.numero.localeCompare(b.numero));
+
+  const filas = [];
+
+  filas.push(["=== NÚMEROS VENDIDOS (PAGO CONFIRMADO) ==="].map(escapar).join(SEP));
+  filas.push(["Número","Nombre y apellido","Teléfono","Monto pagado","ID de reserva"].map(escapar).join(SEP));
+  datosVendidos.forEach(c => {
+    filas.push([c.numero, c.nombre, c.telefono, c.monto, c.reservaId].map(escapar).join(SEP));
   });
+  const totalVendidoRecaudado = datosVendidos.length * PRECIO_UNITARIO;
+  filas.push(["TOTAL VENDIDOS", datosVendidos.length, "", totalVendidoRecaudado, ""].map(escapar).join(SEP));
 
-  const csvContent = filas.map(fila =>
-    fila.map(campo => `"${String(campo).replace(/"/g,'""')}"`).join(",")
-  ).join("\r\n");
+  filas.push("");
+  filas.push("");
 
+  filas.push(["=== NÚMEROS PENDIENTES DE APROBACIÓN (RESERVADOS, ESPERANDO CONFIRMACIÓN MANUAL DEL ADMIN) ==="].map(escapar).join(SEP));
+  filas.push(["Número","Nombre y apellido","Teléfono","Monto a cobrar","ID de reserva","Estado del plazo"].map(escapar).join(SEP));
+  datosPendientes.forEach(c => {
+    filas.push([c.numero, c.nombre, c.telefono, c.monto, c.reservaId, c.vence].map(escapar).join(SEP));
+  });
+  const totalPendienteMonto = datosPendientes.length * PRECIO_UNITARIO;
+  filas.push(["TOTAL PENDIENTES", datosPendientes.length, "", totalPendienteMonto, "", ""].map(escapar).join(SEP));
+
+  const csvContent = filas.join("\r\n");
   const csvConBom = "\ufeff" + csvContent;
+
   const blob = new Blob([csvConBom], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
 
   const fecha = new Date().toISOString().slice(0,10);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `vendidos_rifa_nh_${fecha}.csv`;
+  a.download = `rifa_nh_vendidos_y_pendientes_${fecha}.csv`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 };
-
-setInterval(async ()=>{
-  if(!esAdmin) return;
-  const ahora = Date.now();
-  for(const n of numeros){
-    if(n.reservado && n.reservadoHasta && ahora > n.reservadoHasta){
-      await updateDoc(doc(db,"numeros",n.id), { reservado:false, reservadoHasta:null });
-    }
-  }
-}, 15000);
 
 document.getElementById("buscador")?.addEventListener("input", render);
 </script>
