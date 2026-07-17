@@ -1,12 +1,12 @@
 
 
-🔒 Panel Administrador — Rifa NH-Fitness
+Panel Administrador - Rifa NH-Fitness
 
 
   Ingreso Administrador
   Email
   
-  Contraseña
+  Contrasena
   
   Ingresar
 
@@ -14,39 +14,38 @@
 
   
     0Vendidos
-    0Pendientes de aprobación
+    0Pendientes de aprobacion
     1000Disponibles
     $0Recaudado
   
 
   
     
-    0 de 1000 números vendidos (0%)
+    0 de 1000 numeros vendidos (0%)
   
 
   
     
     
-      📋 Todos los números
-      🔴 Solo vendidos
-      🟡 Solo pendientes de aprobación
-      🟢 Solo disponibles
+      Todos los numeros
+      Solo vendidos
+      Solo pendientes de aprobacion
+      Solo disponibles
     
-    ➕ Reservar manual
-    📥 Exportar Excel
+    + Reservar manual
+    Exportar Excel
     Salir
   
 
   
-  🟦 Modo selección activado: tocá los números 🟢 disponibles en la grilla para agregarlos a tu reserva manual.
+  Modo seleccion activado: toca los numeros disponibles en la grilla para agregarlos a tu reserva manual.
 
-  Cargando números...
+  Cargando numeros...
   
 
 
 
-
-  🎯 0 número(s) seleccionados
+  0 numero(s) seleccionados
   
     Continuar
     Cancelar
@@ -54,13 +53,12 @@
 
 
 
-
   
-    Número 000
+    Numero 000
     
     
       Nombre: -
-      Teléfono: -
+      Telefono: -
     
     
     
@@ -68,25 +66,24 @@
 
 
 
-
   
-    ➕ Reservar / Vender manualmente
+    Reservar / Vender manualmente
 
-<label>Números (separados por coma)</label>
+<label>Numeros (separados por coma)</label>
 <textarea id="rmNumeros" rows="2" placeholder="Ej: 001, 045, 128"></textarea>
 
-<button type="button" class="btn-toggle-modo" onclick="activarModoSeleccion()">🖱 O elegir tocando la grilla</button>
+<button type="button" class="btn-toggle-modo" onclick="activarModoSeleccion()">O elegir tocando la grilla</button>
 
 <label>Nombre y apellido (opcional)</label>
-<input type="text" id="rmNombre" placeholder="Ej: Reserva interna / Juan Pérez">
+<input type="text" id="rmNombre" placeholder="Ej: Reserva interna / Juan Perez">
 
-<label>Teléfono (opcional)</label>
+<label>Telefono (opcional)</label>
 <input type="text" id="rmTelefono" placeholder="Ej: 1123456789">
 
-<label>¿Cómo querés cargarlo?</label>
+<label>Como queres cargarlo?</label>
 <div class="tipo-opciones">
-  <label><input type="radio" name="rmTipo" value="reservado" checked> 🟡 Reservado (pendiente, 15 min)</label>
-  <label><input type="radio" name="rmTipo" value="vendido"> 🔴 Vendido (confirmado)</label>
+  <label><input type="radio" name="rmTipo" value="reservado" checked> Reservado (pendiente, 15 min)</label>
+  <label><input type="radio" name="rmTipo" value="vendido"> Vendido (confirmado)</label>
 </div>
 
 <div class="modal-buttons">
@@ -128,7 +125,6 @@ let esAdmin = false;
 let filtroEstadoActual = "todos";
 let datosCompradores = {};
 
-// ===== Estado del modo selección manual (nueva función) =====
 let modoSeleccionAdmin = false;
 let seleccionadosAdmin = [];
 
@@ -143,7 +139,7 @@ window.login = function(){
   const email = document.getElementById("loginUser").value.trim();
   const pass = document.getElementById("loginPass").value.trim();
   signInWithEmailAndPassword(auth, email, pass)
-    .catch((err) => { alert("Usuario o contraseña incorrectos."); console.error(err); });
+    .catch((err) => { alert("Usuario o contrasena incorrectos."); console.error(err); });
 };
 
 window.logout = function(){ signOut(auth); };
@@ -220,13 +216,13 @@ window.render = function(){
   });
 
   if(mostrados === 0){
-    grid.innerHTML = "<p class='sin-resultados'>No se encontraron números con ese filtro.</p>";
+    grid.innerHTML = "<p class='sin-resultados'>No se encontraron numeros con ese filtro.</p>";
   }
 
   const contador = document.getElementById("contadorResultados");
   contador.textContent = filtroEstadoActual === "todos" && !filtroTexto
     ? ""
-    : `Mostrando ${mostrados} número(s)`;
+    : "Mostrando " + mostrados + " numero(s)";
 
   let vendidos=0, reservados=0, disponibles=0;
   numeros.forEach(n=>{
@@ -243,7 +239,7 @@ window.render = function(){
 
   const pct = Math.round((vendidos / TOTAL_NUMEROS) * 100);
   document.getElementById("progresoBarra").style.width = pct + "%";
-  document.getElementById("progresoTexto").textContent = `${vendidos} de ${TOTAL_NUMEROS} números vendidos (${pct}%)`;
+  document.getElementById("progresoTexto").textContent = vendidos + " de " + TOTAL_NUMEROS + " numeros vendidos (" + pct + "%)";
 };
 
 async function registrarHistorial(accion, ids, detalle){
@@ -252,11 +248,11 @@ async function registrarHistorial(accion, ids, detalle){
       accion: accion,
       numeros: ids,
       detalle: detalle || null,
-      adminEmail: auth.currentUser?.email || "-",
+      adminEmail: auth.currentUser ? auth.currentUser.email : "-",
       fecha: serverTimestamp()
     });
   }catch(err){
-    console.error("No se pudo registrar en el historial de auditoría:", err);
+    console.error("No se pudo registrar en el historial de auditoria:", err);
   }
 }
 
@@ -272,7 +268,7 @@ async function abrirModalAdmin(n){
   const idsGrupo = grupo.map(x => x.id);
 
   document.getElementById("tituloModal").textContent =
-    idsGrupo.length > 1 ? "Reserva grupal (" + idsGrupo.length + " números)" : "Número " + n.id;
+    idsGrupo.length > 1 ? "Reserva grupal (" + idsGrupo.length + " numeros)" : "Numero " + n.id;
 
   document.getElementById("verNombre").textContent = "-";
   document.getElementById("verContacto").textContent = "-";
@@ -288,20 +284,20 @@ async function abrirModalAdmin(n){
   }
 
   let estadoTexto = "";
-  if(estado==="disponible") estadoTexto = "🟢 Disponible";
+  if(estado==="disponible") estadoTexto = "Disponible";
   if(estado==="reservado"){
     const restante = Math.max(0, Math.ceil((n.reservadoHasta - Date.now())/60000));
     estadoTexto = restante > 0
-      ? `🟡 Reservado — dentro del plazo de 15 min (quedan ${restante} min)`
-      : `🟡 Reservado — el plazo de 15 min ya venció, esperando que lo liberes o confirmes el pago`;
+      ? "Reservado - dentro del plazo de 15 min (quedan " + restante + " min)"
+      : "Reservado - el plazo de 15 min ya vencio, esperando que lo liberes o confirmes el pago";
   }
-  if(estado==="vendido") estadoTexto = "🔴 Vendido";
-  document.getElementById("infoEstado").innerHTML = "<p><b>Estado:</b> "+estadoTexto+"</p>";
+  if(estado==="vendido") estadoTexto = "Vendido";
+  document.getElementById("infoEstado").innerHTML = "<p><b>Estado:</b> " + estadoTexto + "</p>";
 
   const grupoContenedor = document.getElementById("grupoContenedor");
   if(idsGrupo.length > 1){
     grupoContenedor.innerHTML =
-      "<p style='font-size:13px; margin-bottom:4px;'><b>Números incluidos en esta reserva:</b></p>" +
+      "<p style='font-size:13px; margin-bottom:4px;'><b>Numeros incluidos en esta reserva:</b></p>" +
       "<div class='grupo-lista'>" + idsGrupo.join(", ") + "</div>";
   } else {
     grupoContenedor.innerHTML = "";
@@ -313,13 +309,13 @@ async function abrirModalAdmin(n){
   if(estado==="reservado"){
     const btnConfirmar = document.createElement("button");
     btnConfirmar.className = "btn-guardar";
-    btnConfirmar.textContent = idsGrupo.length > 1 ? "✅ Confirmar pago (todo el grupo)" : "✅ Confirmar pago recibido";
+    btnConfirmar.textContent = idsGrupo.length > 1 ? "Confirmar pago (todo el grupo)" : "Confirmar pago recibido";
     btnConfirmar.onclick = () => confirmarPagoAdmin(idsGrupo);
     botones.appendChild(btnConfirmar);
 
     const btnLiberar = document.createElement("button");
     btnLiberar.className = "btn-eliminar";
-    btnLiberar.textContent = idsGrupo.length > 1 ? "Liberar grupo completo" : "Liberar número";
+    btnLiberar.textContent = idsGrupo.length > 1 ? "Liberar grupo completo" : "Liberar numero";
     btnLiberar.onclick = () => liberarNumeroAdmin(idsGrupo);
     botones.appendChild(btnLiberar);
   }
@@ -369,11 +365,6 @@ function cerrarModalAdmin(){
   document.getElementById("overlayNumero").classList.remove("active");
 }
 
-/* =======================================================================
-   NUEVA FUNCIÓN: Reservar / vender números manualmente desde el Admin
-   sin necesidad de que el comprador pase por la página pública (INDEX)
-   ======================================================================= */
-
 window.abrirModalReservaManual = function(){
   document.getElementById("rmNumeros").value = "";
   document.getElementById("rmNombre").value = "";
@@ -384,11 +375,9 @@ window.abrirModalReservaManual = function(){
 
 window.cerrarModalReservaManual = function(){
   document.getElementById("overlayReservaManual").classList.remove("active");
-  // Si estaba en modo selección de grilla, lo apagamos también al cerrar
   if(modoSeleccionAdmin) cancelarModoSeleccion();
 };
 
-// --- Modo selección directa en la grilla ---
 window.activarModoSeleccion = function(){
   modoSeleccionAdmin = true;
   seleccionadosAdmin = [];
@@ -401,7 +390,7 @@ window.activarModoSeleccion = function(){
 function onClickNumeroModoSeleccion(n){
   const estado = estadoDe(n);
   if(estado !== "disponible"){
-    alert("Solo podés seleccionar números 🟢 disponibles. Este número ya está " + (estado === "vendido" ? "vendido." : "reservado."));
+    alert("Solo podes seleccionar numeros disponibles. Este numero ya esta " + (estado === "vendido" ? "vendido." : "reservado."));
     return;
   }
   const idx = seleccionadosAdmin.indexOf(n.id);
@@ -423,15 +412,16 @@ function actualizarBarraSeleccionAdmin(){
 
 window.continuarConSeleccion = function(){
   if(seleccionadosAdmin.length === 0){
-    alert("Todavía no seleccionaste ningún número en la grilla.");
+    alert("Todavia no seleccionaste ningun numero en la grilla.");
     return;
   }
   document.getElementById("rmNumeros").value = seleccionadosAdmin.join(", ");
-  cancelarModoSeleccion(false); // apaga el modo pero conserva los datos ya volcados al textarea
+  cancelarModoSeleccion(false);
   document.getElementById("overlayReservaManual").classList.add("active");
 };
 
-window.cancelarModoSeleccion = function(limpiarLista = true){
+window.cancelarModoSeleccion = function(limpiarLista){
+  if(limpiarLista === undefined) limpiarLista = true;
   modoSeleccionAdmin = false;
   if(limpiarLista) seleccionadosAdmin = [];
   document.getElementById("hintModoSeleccion").style.display = "none";
@@ -439,33 +429,29 @@ window.cancelarModoSeleccion = function(limpiarLista = true){
   render();
 };
 
-// --- Guardado final de la reserva/venta manual ---
 window.guardarReservaManual = async function(){
   const textoNumeros = document.getElementById("rmNumeros").value.trim();
   const nombre = document.getElementById("rmNombre").value.trim() || "Carga manual (Admin)";
   const telefono = document.getElementById("rmTelefono").value.trim() || "-";
-  const tipo = document.querySelector('input[name="rmTipo"]:checked').value; // "reservado" | "vendido"
+  const tipo = document.querySelector('input[name="rmTipo"]:checked').value;
 
   if(!textoNumeros){
-    alert("Ingresá al menos un número, o usá el botón para elegirlos tocando la grilla.");
+    alert("Ingresa al menos un numero, o usa el boton para elegirlos tocando la grilla.");
     return;
   }
 
-  // Parseo y normalización de números (acepta "1, 45, 128" o "001,045,128")
   const idsIngresados = [...new Set(
     textoNumeros.split(",")
       .map(s => s.trim())
       .filter(s => s.length > 0)
   )];
 
-  // Detectamos cuántos dígitos usa el sistema mirando el primer número existente
   const longitudId = numeros.length > 0 ? numeros[0].id.length : 3;
   const idsNormalizados = idsIngresados.map(s => {
     const soloDigitos = s.replace(/\D/g, "");
     return soloDigitos.padStart(longitudId, "0");
   });
 
-  // Validación: existencia y disponibilidad
   const inexistentes = [];
   const noDisponibles = [];
   const validos = [];
@@ -479,18 +465,23 @@ window.guardarReservaManual = async function(){
   });
 
   if(inexistentes.length > 0 || noDisponibles.length > 0){
-    let mensaje = "⚠ No se pudo continuar con todos los números:\n";
-    if(inexistentes.length > 0) mensaje += "\n❌ No existen: " + inexistentes.join(", ");
-    if(noDisponibles.length > 0) mensaje += "\n❌ No disponibles: " + noDisponibles.join(", ");
-    if(validos.length > 0) mensaje += "\n\n¿Querés continuar solo con los números válidos? (" + validos.join(", ") + ")";
-    else mensaje += "\n\nNo quedan números válidos para procesar.";
+    let mensaje = "No se pudo continuar con todos los numeros:\n";
+    if(inexistentes.length > 0) mensaje += "\nNo existen: " + inexistentes.join(", ");
+    if(noDisponibles.length > 0) mensaje += "\nNo disponibles: " + noDisponibles.join(", ");
+    if(validos.length > 0) mensaje += "\n\nQueres continuar solo con los numeros validos? (" + validos.join(", ") + ")";
+    else mensaje += "\n\nNo quedan numeros validos para procesar.";
 
-    const continuar = validos.length > 0 ? confirm(mensaje) : (alert(mensaje), false);
+    let continuar = false;
+    if(validos.length > 0){
+      continuar = confirm(mensaje);
+    } else {
+      alert(mensaje);
+    }
     if(!continuar) return;
   }
 
   if(validos.length === 0){
-    alert("No hay números válidos para guardar.");
+    alert("No hay numeros validos para guardar.");
     return;
   }
 
@@ -517,18 +508,18 @@ window.guardarReservaManual = async function(){
     });
 
     await batch.commit();
-    await registrarHistorial(esVenta ? "carga_manual_vendido" : "carga_manual_reservado", validos, { nombre, telefono });
+    await registrarHistorial(esVenta ? "carga_manual_vendido" : "carga_manual_reservado", validos, { nombre: nombre, telefono: telefono });
 
     validos.forEach(id => { delete datosCompradores[id]; });
 
     document.getElementById("overlayReservaManual").classList.remove("active");
     if(modoSeleccionAdmin) cancelarModoSeleccion();
 
-    alert("✅ Listo. " + validos.length + " número(s) cargado(s) como " + (esVenta ? "vendido(s)." : "reservado(s) (pendiente de aprobación, 15 min)."));
+    alert("Listo. " + validos.length + " numero(s) cargado(s) como " + (esVenta ? "vendido(s)." : "reservado(s) (pendiente de aprobacion, 15 min)."));
 
   }catch(err){
     console.error(err);
-    alert("❌ Ocurrió un error al guardar la reserva/venta manual. Revisá la consola para más detalles.");
+    alert("Ocurrio un error al guardar la reserva/venta manual. Revisa la consola para mas detalles.");
   }
 };
 
@@ -537,7 +528,7 @@ window.exportarExcel = async function(){
   const pendientes = numeros.filter(n => n.reservado);
 
   if(vendidos.length === 0 && pendientes.length === 0){
-    alert("Todavía no hay números vendidos ni pendientes de aprobación para exportar.");
+    alert("Todavia no hay numeros vendidos ni pendientes de aprobacion para exportar.");
     return;
   }
 
@@ -564,7 +555,7 @@ window.exportarExcel = async function(){
   const datosPendientes = (await Promise.all(pendientes.map(async (n) => {
     const base = await obtenerDatosComprador(n);
     const restanteMin = Math.max(0, Math.ceil((n.reservadoHasta - Date.now())/60000));
-    return { ...base, vence: restanteMin > 0 ? restanteMin + " min" : "Plazo vencido" };
+    return Object.assign({}, base, { vence: restanteMin > 0 ? restanteMin + " min" : "Plazo vencido" });
   }))).sort((a,b) => a.numero.localeCompare(b.numero));
 
   const totalVendidoRecaudado = datosVendidos.length * PRECIO_UNITARIO;
@@ -575,87 +566,71 @@ window.exportarExcel = async function(){
   const estiloCelda = "padding:6px; border:1px solid #ccc;";
   const estiloTotal = "background:#fff3cd; font-weight:bold; padding:6px; border:1px solid #ccc;";
 
-  let filasVendidos = datosVendidos.map(c => `
-    <tr>
-      <td style="${estiloCelda}">${c.numero}</td>
-      <td style="${estiloCelda}">${c.nombre}</td>
-      <td style="${estiloCelda}">${c.telefono}</td>
-      <td style="${estiloCelda}">${c.monto}</td>
-      <td style="${estiloCelda}">${c.reservaId}</td>
-    </tr>
-  `).join("");
+  let filasVendidos = datosVendidos.map(c =>
+    "<tr>" +
+      "<td style='" + estiloCelda + "'>" + c.numero + "</td>" +
+      "<td style='" + estiloCelda + "'>" + c.nombre + "</td>" +
+      "<td style='" + estiloCelda + "'>" + c.telefono + "</td>" +
+      "<td style='" + estiloCelda + "'>" + c.monto + "</td>" +
+      "<td style='" + estiloCelda + "'>" + c.reservaId + "</td>" +
+    "</tr>"
+  ).join("");
 
-  let filasPendientes = datosPendientes.map(c => `
-    <tr>
-      <td style="${estiloCelda}">${c.numero}</td>
-      <td style="${estiloCelda}">${c.nombre}</td>
-      <td style="${estiloCelda}">${c.telefono}</td>
-      <td style="${estiloCelda}">${c.monto}</td>
-      <td style="${estiloCelda}">${c.reservaId}</td>
-      <td style="${estiloCelda}">${c.vence}</td>
-    </tr>
-  `).join("");
+  let filasPendientes = datosPendientes.map(c =>
+    "<tr>" +
+      "<td style='" + estiloCelda + "'>" + c.numero + "</td>" +
+      "<td style='" + estiloCelda + "'>" + c.nombre + "</td>" +
+      "<td style='" + estiloCelda + "'>" + c.telefono + "</td>" +
+      "<td style='" + estiloCelda + "'>" + c.monto + "</td>" +
+      "<td style='" + estiloCelda + "'>" + c.reservaId + "</td>" +
+      "<td style='" + estiloCelda + "'>" + c.vence + "</td>" +
+    "</tr>"
+  ).join("");
 
-  const htmlExcel = `
-    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-    <head>
-      <meta charset="UTF-8">
-      <!--[if gte mso 9]>
-      <xml>
-        <x:ExcelWorkbook>
-          <x:ExcelWorksheets>
-            <x:ExcelWorksheet>
-              <x:Name>Rifa NH</x:Name>
-              <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
-            </x:ExcelWorksheet>
-          </x:ExcelWorksheets>
-        </x:ExcelWorkbook>
-      </xml>
-      <![endif]-->
-    </head>
-    <body>
-      <table border="1" cellspacing="0" cellpadding="0" style="border-collapse:collapse; font-family:Arial, sans-serif; font-size:13px;">
-        <tr><td colspan="6" style="${estiloTitulo}">NÚMEROS VENDIDOS (PAGO CONFIRMADO)</td></tr>
-        <tr>
-          <th style="${estiloHeader}">Número</th>
-          <th style="${estiloHeader}">Nombre y apellido</th>
-          <th style="${estiloHeader}">Teléfono</th>
-          <th style="${estiloHeader}">Monto pagado</th>
-          <th style="${estiloHeader}">ID de reserva</th>
-          <th style="${estiloHeader}"></th>
-        </tr>
-        ${filasVendidos}
-        <tr>
-          <td style="${estiloTotal}">TOTAL VENDIDOS</td>
-          <td style="${estiloTotal}">${datosVendidos.length}</td>
-          <td style="${estiloTotal}"></td>
-          <td style="${estiloTotal}">${totalVendidoRecaudado}</td>
-          <td style="${estiloTotal}"></td>
-          <td style="${estiloTotal}"></td>
-        </tr>
-        <tr><td colspan="6" style="height:20px; border:none;"></td></tr>
-        <tr><td colspan="6" style="${estiloTitulo}">NÚMEROS PENDIENTES DE APROBACIÓN (RESERVADOS, ESPERANDO CONFIRMACIÓN MANUAL)</td></tr>
-        <tr>
-          <th style="${estiloHeader}">Número</th>
-          <th style="${estiloHeader}">Nombre y apellido</th>
-          <th style="${estiloHeader}">Teléfono</th>
-          <th style="${estiloHeader}">Monto a cobrar</th>
-          <th style="${estiloHeader}">ID de reserva</th>
-          <th style="${estiloHeader}">Estado del plazo</th>
-        </tr>
-        ${filasPendientes}
-        <tr>
-          <td style="${estiloTotal}">TOTAL PENDIENTES</td>
-          <td style="${estiloTotal}">${datosPendientes.length}</td>
-          <td style="${estiloTotal}"></td>
-          <td style="${estiloTotal}">${totalPendienteMonto}</td>
-          <td style="${estiloTotal}"></td>
-          <td style="${estiloTotal}"></td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `;
+  const htmlExcel =
+    "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'>" +
+    "<head><meta charset='UTF-8'></head>" +
+    "<body>" +
+    "<table border='1' cellspacing='0' cellpadding='0' style='border-collapse:collapse; font-family:Arial, sans-serif; font-size:13px;'>" +
+    "<tr><td colspan='6' style='" + estiloTitulo + "'>NUMEROS VENDIDOS (PAGO CONFIRMADO)</td></tr>" +
+    "<tr>" +
+      "<th style='" + estiloHeader + "'>Numero</th>" +
+      "<th style='" + estiloHeader + "'>Nombre y apellido</th>" +
+      "<th style='" + estiloHeader + "'>Telefono</th>" +
+      "<th style='" + estiloHeader + "'>Monto pagado</th>" +
+      "<th style='" + estiloHeader + "'>ID de reserva</th>" +
+      "<th style='" + estiloHeader + "'></th>" +
+    "</tr>" +
+    filasVendidos +
+    "<tr>" +
+      "<td style='" + estiloTotal + "'>TOTAL VENDIDOS</td>" +
+      "<td style='" + estiloTotal + "'>" + datosVendidos.length + "</td>" +
+      "<td style='" + estiloTotal + "'></td>" +
+      "<td style='" + estiloTotal + "'>" + totalVendidoRecaudado + "</td>" +
+      "<td style='" + estiloTotal + "'></td>" +
+      "<td style='" + estiloTotal + "'></td>" +
+    "</tr>" +
+    "<tr><td colspan='6' style='height:20px; border:none;'></td></tr>" +
+    "<tr><td colspan='6' style='" + estiloTitulo + "'>NUMEROS PENDIENTES DE APROBACION (RESERVADOS, ESPERANDO CONFIRMACION MANUAL)</td></tr>" +
+    "<tr>" +
+      "<th style='" + estiloHeader + "'>Numero</th>" +
+      "<th style='" + estiloHeader + "'>Nombre y apellido</th>" +
+      "<th style='" + estiloHeader + "'>Telefono</th>" +
+      "<th style='" + estiloHeader + "'>Monto a cobrar</th>" +
+      "<th style='" + estiloHeader + "'>ID de reserva</th>" +
+      "<th style='" + estiloHeader + "'>Estado del plazo</th>" +
+    "</tr>" +
+    filasPendientes +
+    "<tr>" +
+      "<td style='" + estiloTotal + "'>TOTAL PENDIENTES</td>" +
+      "<td style='" + estiloTotal + "'>" + datosPendientes.length + "</td>" +
+      "<td style='" + estiloTotal + "'></td>" +
+      "<td style='" + estiloTotal + "'>" + totalPendienteMonto + "</td>" +
+      "<td style='" + estiloTotal + "'></td>" +
+      "<td style='" + estiloTotal + "'></td>" +
+    "</tr>" +
+    "</table>" +
+    "</body></html>";
 
   const blob = new Blob(["\ufeff" + htmlExcel], { type: "application/vnd.ms-excel;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -663,15 +638,15 @@ window.exportarExcel = async function(){
   const fecha = new Date().toISOString().slice(0,10);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `rifa_nh_vendidos_y_pendientes_${fecha}.xls`;
+  a.download = "rifa_nh_vendidos_y_pendientes_" + fecha + ".xls";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 };
 
-document.getElementById("buscador")?.addEventListener("input", render);
-document.getElementById("filtroEstado")?.addEventListener("change", render);
+document.getElementById("buscador").addEventListener("input", render);
+document.getElementById("filtroEstado").addEventListener("change", render);
 
 
 
