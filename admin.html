@@ -1,103 +1,106 @@
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Administrador — Rifa NH-Fitness</title>
+<style>
+  :root{--naranja:#f7941e; --negro:#1a1a1a; --verde:#2ecc71; --rojo:#e74c3c; --amarillo:#f1c40f; --azul:#3498db;}
+  *{box-sizing:border-box; font-family:'Segoe UI',Arial,sans-serif;}
+  body{margin:0; background:#f4f4f4;}
+  header{background:var(--negro); color:#fff; text-align:center; padding:15px;}
+  header h2{margin:0; color:var(--naranja);}
+  .stats{display:flex; justify-content:center; gap:14px; margin:15px 0; flex-wrap:wrap;}
+  .stat-box{background:#fff; border-radius:10px; padding:10px 16px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,.15); min-width:95px; cursor:pointer; transition:transform .1s;}
+  .stat-box:hover{transform:translateY(-2px);}
+  .stat-box.activo{box-shadow:0 0 0 3px var(--naranja);}
+  .stat-box .num{font-size:22px; font-weight:bold;}
+  .stat-box.vendidos .num{color:var(--rojo);}
+  .stat-box.reservados .num{color:#b8860b;}
+  .stat-box.disponibles .num{color:var(--verde);}
+  .stat-box.recaudado .num{color:#2c3e50; font-size:18px;}
+  .toolbar{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:10px auto; max-width:800px; padding:0 10px;}
+  #buscador{flex:1; min-width:180px; padding:10px; border-radius:8px; border:1px solid #ccc;}
+  #filtroEstado{padding:10px; border-radius:8px; border:1px solid #ccc; background:#fff; font-weight:bold; cursor:pointer;}
+  #logoutBtn{padding:10px 15px; border:none; border-radius:8px; background:var(--naranja); color:var(--negro); font-weight:bold; cursor:pointer;}
+  #exportBtn{padding:10px 15px; border:none; border-radius:8px; background:#2c3e50; color:#fff; font-weight:bold; cursor:pointer;}
+  .contador-resultados{text-align:center; font-size:13px; color:#666; margin:-6px 0 10px 0;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(58px,1fr)); gap:6px; max-width:1000px; margin:20px auto; padding:0 10px;}
+  .numero{aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-weight:bold; color:#fff; cursor:pointer; font-size:13px; user-select:none; border:2px solid rgba(0,0,0,.15);}
+  .disponible{background:var(--verde);}
+  .vendido{background:var(--rojo);}
+  .reservado{background:var(--amarillo); color:#1a1a1a;}
+  .sin-resultados{text-align:center; color:#888; padding:30px 0; grid-column:1/-1;}
+  .overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:999; padding:15px;}
+  .overlay.active{display:flex;}
+  .modal{background:#fff; border-radius:12px; padding:20px; width:100%; max-width:360px; max-height:90vh; overflow-y:auto;}
+  .modal h3{margin-top:0; text-align:center;}
+  .modal label{display:block; margin-top:10px; font-size:14px; font-weight:bold;}
+  .modal input{width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:6px;}
+  .modal-buttons{display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;}
+  .modal-buttons button{flex:1; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; min-width:90px;}
+  .btn-guardar{background:var(--verde); color:#fff;}
+  .btn-eliminar{background:var(--rojo); color:#fff;}
+  .btn-cerrar{background:#ccc;}
+  .loading{text-align:center; padding:20px; color:#888;}
+  .grupo-lista{background:#f9f9f9; border-radius:8px; padding:10px; margin:10px 0; font-size:13px; max-height:120px; overflow-y:auto;}
+</style>
+</head>
+<body>
 
+<header><h2>🔒 Panel Administrador — Rifa NH-Fitness</h2></header>
 
-Panel Administrador - Rifa NH-Fitness
-
-
-  Ingreso Administrador
-  Email
-  
-  Contrasena
-  
-  Ingresar
-
-
-
-  
-    0Vendidos
-    0Pendientes de aprobacion
-    1000Disponibles
-    $0Recaudado
-  
-
-  
-    
-    0 de 1000 numeros vendidos (0%)
-  
-
-  
-    
-    
-      Todos los numeros
-      Solo vendidos
-      Solo pendientes de aprobacion
-      Solo disponibles
-    
-    + Reservar manual
-    Exportar Excel
-    Salir
-  
-
-  
-  Modo seleccion activado: toca los numeros disponibles en la grilla para agregarlos a tu reserva manual.
-
-  Cargando numeros...
-  
-
-
-
-  0 numero(s) seleccionados
-  
-    Continuar
-    Cancelar
-  
-
-
-
-  
-    Numero 000
-    
-    
-      Nombre: -
-      Telefono: -
-    
-    
-    
-  
-
-
-
-  
-    Reservar / Vender manualmente
-
-<label>Numeros (separados por coma)</label>
-<textarea id="rmNumeros" rows="2" placeholder="Ej: 001, 045, 128"></textarea>
-
-<button type="button" class="btn-toggle-modo" onclick="activarModoSeleccion()">O elegir tocando la grilla</button>
-
-<label>Nombre y apellido (opcional)</label>
-<input type="text" id="rmNombre" placeholder="Ej: Reserva interna / Juan Perez">
-
-<label>Telefono (opcional)</label>
-<input type="text" id="rmTelefono" placeholder="Ej: 1123456789">
-
-<label>Como queres cargarlo?</label>
-<div class="tipo-opciones">
-  <label><input type="radio" name="rmTipo" value="reservado" checked> Reservado (pendiente, 15 min)</label>
-  <label><input type="radio" name="rmTipo" value="vendido"> Vendido (confirmado)</label>
+<div id="pantallaLogin" style="max-width:360px; margin:40px auto; background:#fff; padding:20px; border-radius:12px;">
+  <h3>Ingreso Administrador</h3>
+  <label>Email</label>
+  <input type="text" id="loginUser" placeholder="nhf@nhfitness.com" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:6px;">
+  <label>Contraseña</label>
+  <input type="password" id="loginPass" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:6px;">
+  <button onclick="login()" style="width:100%; margin-top:15px; padding:10px; background:var(--verde); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Ingresar</button>
 </div>
 
-<div class="modal-buttons">
-  <button class="btn-guardar" onclick="guardarReservaManual()">Guardar</button>
-  <button class="btn-cerrar" onclick="cerrarModalReservaManual()">Cancelar</button>
+<div id="panelAdmin" style="display:none;">
+  <div class="stats">
+    <div class="stat-box vendidos" id="statVendidos" onclick="aplicarFiltroEstado('vendido')"><div class="num" id="countVendidos">0</div><div>Vendidos</div></div>
+    <div class="stat-box reservados" id="statReservados" onclick="aplicarFiltroEstado('reservado')"><div class="num" id="countReservados">0</div><div>Pendientes de aprobación</div></div>
+    <div class="stat-box disponibles" id="statDisponibles" onclick="aplicarFiltroEstado('disponible')"><div class="num" id="countDisponibles">1000</div><div>Disponibles</div></div>
+    <div class="stat-box recaudado" id="statRecaudado" onclick="aplicarFiltroEstado('todos')"><div class="num" id="totalRecaudado">$0</div><div>Recaudado</div></div>
+  </div>
+
+  <div class="toolbar">
+    <input id="buscador" type="text" placeholder="Buscar número...">
+    <select id="filtroEstado">
+      <option value="todos">📋 Todos los números</option>
+      <option value="vendido">🔴 Solo vendidos</option>
+      <option value="reservado">🟡 Solo pendientes de aprobación</option>
+      <option value="disponible">🟢 Solo disponibles</option>
+    </select>
+    <button id="exportBtn" onclick="exportarExcel()">📥 Exportar Excel</button>
+    <button id="logoutBtn" onclick="logout()">Salir</button>
+  </div>
+
+  <p class="contador-resultados" id="contadorResultados"></p>
+
+  <div id="cargando" class="loading">Cargando números...</div>
+  <div class="grid" id="grid"></div>
 </div>
 
-  
+<div class="overlay" id="overlayNumero">
+  <div class="modal">
+    <h3 id="tituloModal">Número 000</h3>
+    <div id="infoEstado"></div>
+    <div id="formularioAdmin">
+      <p><b>Nombre:</b> <span id="verNombre">-</span></p>
+      <p><b>Teléfono:</b> <span id="verContacto">-</span></p>
+    </div>
+    <div id="grupoContenedor"></div>
+    <div class="modal-buttons" id="botonesModal"></div>
+  </div>
+</div>
 
-
-
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore, collection, doc, getDoc, onSnapshot, updateDoc, orderBy, query, deleteDoc, addDoc, serverTimestamp, writeBatch
+  getFirestore, collection, doc, getDoc, onSnapshot, updateDoc, orderBy, query
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
@@ -117,16 +120,10 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const PRECIO_UNITARIO = 5000;
-const TOTAL_NUMEROS = 1000;
-const MINUTOS_RESERVA = 15;
 
 let numeros = [];
 let esAdmin = false;
 let filtroEstadoActual = "todos";
-let datosCompradores = {};
-
-let modoSeleccionAdmin = false;
-let seleccionadosAdmin = [];
 
 onAuthStateChanged(auth, (user) => {
   esAdmin = !!user;
@@ -139,31 +136,18 @@ window.login = function(){
   const email = document.getElementById("loginUser").value.trim();
   const pass = document.getElementById("loginPass").value.trim();
   signInWithEmailAndPassword(auth, email, pass)
-    .catch((err) => { alert("Usuario o contrasena incorrectos."); console.error(err); });
+    .catch((err) => { alert("Usuario o contraseña incorrectos."); console.error(err); });
 };
 
 window.logout = function(){ signOut(auth); };
 
 function iniciarEscuchaNumeros(){
   const q = query(collection(db, "numeros"), orderBy("__name__"));
-  onSnapshot(q, async (snapshot) => {
+  onSnapshot(q, (snapshot) => {
     numeros = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     document.getElementById("cargando").style.display = "none";
-    await actualizarDatosCompradores();
     render();
   });
-}
-
-async function actualizarDatosCompradores(){
-  const relevantes = numeros.filter(n => n.reservado || n.vendido);
-  const promesas = relevantes.map(async n => {
-    if(datosCompradores[n.id]) return;
-    try{
-      const snap = await getDoc(doc(db,"compradores_privados", n.id));
-      datosCompradores[n.id] = snap.exists() ? snap.data() : {};
-    }catch(e){ datosCompradores[n.id] = {}; }
-  });
-  await Promise.all(promesas);
 }
 
 function estadoDe(n){
@@ -172,6 +156,7 @@ function estadoDe(n){
   return "disponible";
 }
 
+// Aplica un filtro de estado al tocar una de las cajitas de estadísticas.
 window.aplicarFiltroEstado = function(estado){
   filtroEstadoActual = estado;
   document.getElementById("filtroEstado").value = estado;
@@ -180,10 +165,11 @@ window.aplicarFiltroEstado = function(estado){
 
 window.render = function(){
   const grid = document.getElementById("grid");
-  const filtroTexto = document.getElementById("buscador").value.trim().toLowerCase();
+  const filtroTexto = document.getElementById("buscador").value.trim();
   filtroEstadoActual = document.getElementById("filtroEstado").value;
   grid.innerHTML = "";
 
+  // Resaltar visualmente la cajita de estadística activa
   ["statVendidos","statReservados","statDisponibles","statRecaudado"].forEach(id => {
     document.getElementById(id).classList.remove("activo");
   });
@@ -193,36 +179,26 @@ window.render = function(){
   let mostrados = 0;
 
   numeros.forEach(n=>{
-    if(filtroTexto){
-      const datosComprador = datosCompradores[n.id] || {};
-      const coincideNumero = n.id.toLowerCase().includes(filtroTexto);
-      const coincideNombre = (datosComprador.nombre || "").toLowerCase().includes(filtroTexto);
-      const coincideTelefono = (datosComprador.contacto || "").toLowerCase().includes(filtroTexto);
-      if(!coincideNumero && !coincideNombre && !coincideTelefono) return;
-    }
-
+    if(filtroTexto && !n.id.includes(filtroTexto)) return;
     const estado = estadoDe(n);
     if(filtroEstadoActual !== "todos" && estado !== filtroEstadoActual) return;
 
     mostrados++;
     const div = document.createElement("div");
     div.className = "numero " + estado;
-    if(modoSeleccionAdmin && seleccionadosAdmin.includes(n.id)){
-      div.className = "numero seleccionado-admin";
-    }
     div.textContent = n.id;
-    div.onclick = () => modoSeleccionAdmin ? onClickNumeroModoSeleccion(n) : abrirModalAdmin(n);
+    div.onclick = () => abrirModalAdmin(n);
     grid.appendChild(div);
   });
 
   if(mostrados === 0){
-    grid.innerHTML = "<p class='sin-resultados'>No se encontraron numeros con ese filtro.</p>";
+    grid.innerHTML = "<p class='sin-resultados'>No se encontraron números con ese filtro.</p>";
   }
 
   const contador = document.getElementById("contadorResultados");
   contador.textContent = filtroEstadoActual === "todos" && !filtroTexto
     ? ""
-    : "Mostrando " + mostrados + " numero(s)";
+    : `Mostrando ${mostrados} número(s)`;
 
   let vendidos=0, reservados=0, disponibles=0;
   numeros.forEach(n=>{
@@ -236,25 +212,7 @@ window.render = function(){
   document.getElementById("countReservados").textContent = reservados;
   document.getElementById("countDisponibles").textContent = disponibles;
   document.getElementById("totalRecaudado").textContent = "$" + (vendidos*PRECIO_UNITARIO).toLocaleString("es-AR");
-
-  const pct = Math.round((vendidos / TOTAL_NUMEROS) * 100);
-  document.getElementById("progresoBarra").style.width = pct + "%";
-  document.getElementById("progresoTexto").textContent = vendidos + " de " + TOTAL_NUMEROS + " numeros vendidos (" + pct + "%)";
 };
-
-async function registrarHistorial(accion, ids, detalle){
-  try{
-    await addDoc(collection(db, "historial_admin"), {
-      accion: accion,
-      numeros: ids,
-      detalle: detalle || null,
-      adminEmail: auth.currentUser ? auth.currentUser.email : "-",
-      fecha: serverTimestamp()
-    });
-  }catch(err){
-    console.error("No se pudo registrar en el historial de auditoria:", err);
-  }
-}
 
 async function abrirModalAdmin(n){
   const estado = estadoDe(n);
@@ -268,7 +226,7 @@ async function abrirModalAdmin(n){
   const idsGrupo = grupo.map(x => x.id);
 
   document.getElementById("tituloModal").textContent =
-    idsGrupo.length > 1 ? "Reserva grupal (" + idsGrupo.length + " numeros)" : "Numero " + n.id;
+    idsGrupo.length > 1 ? "Reserva grupal (" + idsGrupo.length + " números)" : "Número " + n.id;
 
   document.getElementById("verNombre").textContent = "-";
   document.getElementById("verContacto").textContent = "-";
@@ -284,20 +242,20 @@ async function abrirModalAdmin(n){
   }
 
   let estadoTexto = "";
-  if(estado==="disponible") estadoTexto = "Disponible";
+  if(estado==="disponible") estadoTexto = "🟢 Disponible";
   if(estado==="reservado"){
     const restante = Math.max(0, Math.ceil((n.reservadoHasta - Date.now())/60000));
     estadoTexto = restante > 0
-      ? "Reservado - dentro del plazo de 15 min (quedan " + restante + " min)"
-      : "Reservado - el plazo de 15 min ya vencio, esperando que lo liberes o confirmes el pago";
+      ? `🟡 Reservado — dentro del plazo de 15 min (quedan ${restante} min)`
+      : `🟡 Reservado — el plazo de 15 min ya venció, esperando que lo liberes o confirmes el pago`;
   }
-  if(estado==="vendido") estadoTexto = "Vendido";
-  document.getElementById("infoEstado").innerHTML = "<p><b>Estado:</b> " + estadoTexto + "</p>";
+  if(estado==="vendido") estadoTexto = "🔴 Vendido";
+  document.getElementById("infoEstado").innerHTML = "<p><b>Estado:</b> "+estadoTexto+"</p>";
 
   const grupoContenedor = document.getElementById("grupoContenedor");
   if(idsGrupo.length > 1){
     grupoContenedor.innerHTML =
-      "<p style='font-size:13px; margin-bottom:4px;'><b>Numeros incluidos en esta reserva:</b></p>" +
+      "<p style='font-size:13px; margin-bottom:4px;'><b>Números incluidos en esta reserva:</b></p>" +
       "<div class='grupo-lista'>" + idsGrupo.join(", ") + "</div>";
   } else {
     grupoContenedor.innerHTML = "";
@@ -309,13 +267,13 @@ async function abrirModalAdmin(n){
   if(estado==="reservado"){
     const btnConfirmar = document.createElement("button");
     btnConfirmar.className = "btn-guardar";
-    btnConfirmar.textContent = idsGrupo.length > 1 ? "Confirmar pago (todo el grupo)" : "Confirmar pago recibido";
+    btnConfirmar.textContent = idsGrupo.length > 1 ? "✅ Confirmar pago (todo el grupo)" : "✅ Confirmar pago recibido";
     btnConfirmar.onclick = () => confirmarPagoAdmin(idsGrupo);
     botones.appendChild(btnConfirmar);
 
     const btnLiberar = document.createElement("button");
     btnLiberar.className = "btn-eliminar";
-    btnLiberar.textContent = idsGrupo.length > 1 ? "Liberar grupo completo" : "Liberar numero";
+    btnLiberar.textContent = idsGrupo.length > 1 ? "Liberar grupo completo" : "Liberar número";
     btnLiberar.onclick = () => liberarNumeroAdmin(idsGrupo);
     botones.appendChild(btnLiberar);
   }
@@ -342,22 +300,14 @@ async function confirmarPagoAdmin(ids){
   for(const id of lista){
     await updateDoc(doc(db,"numeros",id), { vendido: true, reservado: false, reservadoHasta: null });
   }
-  await registrarHistorial("confirmar_pago", lista);
   cerrarModalAdmin();
 }
 
 async function liberarNumeroAdmin(ids){
   const lista = Array.isArray(ids) ? ids : [ids];
   for(const id of lista){
-    await updateDoc(doc(db,"numeros",id), { vendido: false, reservado: false, reservadoHasta: null, reservaId: null });
-    try{
-      await deleteDoc(doc(db,"compradores_privados",id));
-      delete datosCompradores[id];
-    }catch(err){
-      console.error("No se pudo borrar compradores_privados/" + id, err);
-    }
+    await updateDoc(doc(db,"numeros",id), { vendido: false, reservado: false, reservadoHasta: null });
   }
-  await registrarHistorial("liberar_o_anular", lista);
   cerrarModalAdmin();
 }
 
@@ -365,170 +315,12 @@ function cerrarModalAdmin(){
   document.getElementById("overlayNumero").classList.remove("active");
 }
 
-window.abrirModalReservaManual = function(){
-  document.getElementById("rmNumeros").value = "";
-  document.getElementById("rmNombre").value = "";
-  document.getElementById("rmTelefono").value = "";
-  document.querySelector('input[name="rmTipo"][value="reservado"]').checked = true;
-  document.getElementById("overlayReservaManual").classList.add("active");
-};
-
-window.cerrarModalReservaManual = function(){
-  document.getElementById("overlayReservaManual").classList.remove("active");
-  if(modoSeleccionAdmin) cancelarModoSeleccion();
-};
-
-window.activarModoSeleccion = function(){
-  modoSeleccionAdmin = true;
-  seleccionadosAdmin = [];
-  document.getElementById("overlayReservaManual").classList.remove("active");
-  document.getElementById("hintModoSeleccion").style.display = "block";
-  actualizarBarraSeleccionAdmin();
-  render();
-};
-
-function onClickNumeroModoSeleccion(n){
-  const estado = estadoDe(n);
-  if(estado !== "disponible"){
-    alert("Solo podes seleccionar numeros disponibles. Este numero ya esta " + (estado === "vendido" ? "vendido." : "reservado."));
-    return;
-  }
-  const idx = seleccionadosAdmin.indexOf(n.id);
-  if(idx > -1) seleccionadosAdmin.splice(idx,1);
-  else seleccionadosAdmin.push(n.id);
-  actualizarBarraSeleccionAdmin();
-  render();
-}
-
-function actualizarBarraSeleccionAdmin(){
-  const barra = document.getElementById("barraSeleccionAdmin");
-  if(modoSeleccionAdmin && seleccionadosAdmin.length > 0){
-    barra.classList.add("activa");
-    document.getElementById("cantSeleccionadosAdmin").textContent = seleccionadosAdmin.length;
-  } else {
-    barra.classList.remove("activa");
-  }
-}
-
-window.continuarConSeleccion = function(){
-  if(seleccionadosAdmin.length === 0){
-    alert("Todavia no seleccionaste ningun numero en la grilla.");
-    return;
-  }
-  document.getElementById("rmNumeros").value = seleccionadosAdmin.join(", ");
-  cancelarModoSeleccion(false);
-  document.getElementById("overlayReservaManual").classList.add("active");
-};
-
-window.cancelarModoSeleccion = function(limpiarLista){
-  if(limpiarLista === undefined) limpiarLista = true;
-  modoSeleccionAdmin = false;
-  if(limpiarLista) seleccionadosAdmin = [];
-  document.getElementById("hintModoSeleccion").style.display = "none";
-  actualizarBarraSeleccionAdmin();
-  render();
-};
-
-window.guardarReservaManual = async function(){
-  const textoNumeros = document.getElementById("rmNumeros").value.trim();
-  const nombre = document.getElementById("rmNombre").value.trim() || "Carga manual (Admin)";
-  const telefono = document.getElementById("rmTelefono").value.trim() || "-";
-  const tipo = document.querySelector('input[name="rmTipo"]:checked').value;
-
-  if(!textoNumeros){
-    alert("Ingresa al menos un numero, o usa el boton para elegirlos tocando la grilla.");
-    return;
-  }
-
-  const idsIngresados = [...new Set(
-    textoNumeros.split(",")
-      .map(s => s.trim())
-      .filter(s => s.length > 0)
-  )];
-
-  const longitudId = numeros.length > 0 ? numeros[0].id.length : 3;
-  const idsNormalizados = idsIngresados.map(s => {
-    const soloDigitos = s.replace(/\D/g, "");
-    return soloDigitos.padStart(longitudId, "0");
-  });
-
-  const inexistentes = [];
-  const noDisponibles = [];
-  const validos = [];
-
-  idsNormalizados.forEach(id => {
-    const n = numeros.find(x => x.id === id);
-    if(!n){ inexistentes.push(id); return; }
-    const estado = estadoDe(n);
-    if(estado !== "disponible"){ noDisponibles.push(id + " (" + estado + ")"); return; }
-    validos.push(id);
-  });
-
-  if(inexistentes.length > 0 || noDisponibles.length > 0){
-    let mensaje = "No se pudo continuar con todos los numeros:\n";
-    if(inexistentes.length > 0) mensaje += "\nNo existen: " + inexistentes.join(", ");
-    if(noDisponibles.length > 0) mensaje += "\nNo disponibles: " + noDisponibles.join(", ");
-    if(validos.length > 0) mensaje += "\n\nQueres continuar solo con los numeros validos? (" + validos.join(", ") + ")";
-    else mensaje += "\n\nNo quedan numeros validos para procesar.";
-
-    let continuar = false;
-    if(validos.length > 0){
-      continuar = confirm(mensaje);
-    } else {
-      alert(mensaje);
-    }
-    if(!continuar) return;
-  }
-
-  if(validos.length === 0){
-    alert("No hay numeros validos para guardar.");
-    return;
-  }
-
-  const reservaId = "r_admin_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
-  const esVenta = tipo === "vendido";
-  const vencimiento = Date.now() + MINUTOS_RESERVA*60*1000;
-
-  try{
-    const batch = writeBatch(db);
-
-    validos.forEach(id => {
-      batch.update(doc(db,"numeros",id), {
-        vendido: esVenta,
-        reservado: !esVenta,
-        reservadoHasta: esVenta ? null : vencimiento,
-        reservaId: reservaId
-      });
-      batch.set(doc(db,"compradores_privados",id), {
-        nombre: nombre,
-        contacto: telefono,
-        reservaId: reservaId,
-        creadoPorAdmin: true
-      });
-    });
-
-    await batch.commit();
-    await registrarHistorial(esVenta ? "carga_manual_vendido" : "carga_manual_reservado", validos, { nombre: nombre, telefono: telefono });
-
-    validos.forEach(id => { delete datosCompradores[id]; });
-
-    document.getElementById("overlayReservaManual").classList.remove("active");
-    if(modoSeleccionAdmin) cancelarModoSeleccion();
-
-    alert("Listo. " + validos.length + " numero(s) cargado(s) como " + (esVenta ? "vendido(s)." : "reservado(s) (pendiente de aprobacion, 15 min)."));
-
-  }catch(err){
-    console.error(err);
-    alert("Ocurrio un error al guardar la reserva/venta manual. Revisa la consola para mas detalles.");
-  }
-};
-
 window.exportarExcel = async function(){
   const vendidos = numeros.filter(n => n.vendido);
   const pendientes = numeros.filter(n => n.reservado);
 
   if(vendidos.length === 0 && pendientes.length === 0){
-    alert("Todavia no hay numeros vendidos ni pendientes de aprobacion para exportar.");
+    alert("Todavía no hay números vendidos ni pendientes de aprobación para exportar.");
     return;
   }
 
@@ -555,7 +347,7 @@ window.exportarExcel = async function(){
   const datosPendientes = (await Promise.all(pendientes.map(async (n) => {
     const base = await obtenerDatosComprador(n);
     const restanteMin = Math.max(0, Math.ceil((n.reservadoHasta - Date.now())/60000));
-    return Object.assign({}, base, { vence: restanteMin > 0 ? restanteMin + " min" : "Plazo vencido" });
+    return { ...base, vence: restanteMin > 0 ? restanteMin + " min" : "Plazo vencido" };
   }))).sort((a,b) => a.numero.localeCompare(b.numero));
 
   const totalVendidoRecaudado = datosVendidos.length * PRECIO_UNITARIO;
@@ -566,71 +358,87 @@ window.exportarExcel = async function(){
   const estiloCelda = "padding:6px; border:1px solid #ccc;";
   const estiloTotal = "background:#fff3cd; font-weight:bold; padding:6px; border:1px solid #ccc;";
 
-  let filasVendidos = datosVendidos.map(c =>
-    "<tr>" +
-      "<td style='" + estiloCelda + "'>" + c.numero + "</td>" +
-      "<td style='" + estiloCelda + "'>" + c.nombre + "</td>" +
-      "<td style='" + estiloCelda + "'>" + c.telefono + "</td>" +
-      "<td style='" + estiloCelda + "'>" + c.monto + "</td>" +
-      "<td style='" + estiloCelda + "'>" + c.reservaId + "</td>" +
-    "</tr>"
-  ).join("");
+  let filasVendidos = datosVendidos.map(c => `
+    <tr>
+      <td style="${estiloCelda}">${c.numero}</td>
+      <td style="${estiloCelda}">${c.nombre}</td>
+      <td style="${estiloCelda}">${c.telefono}</td>
+      <td style="${estiloCelda}">${c.monto}</td>
+      <td style="${estiloCelda}">${c.reservaId}</td>
+    </tr>
+  `).join("");
 
-  let filasPendientes = datosPendientes.map(c =>
-    "<tr>" +
-      "<td style='" + estiloCelda + "'>" + c.numero + "</td>" +
-      "<td style='" + estiloCelda + "'>" + c.nombre + "</td>" +
-      "<td style='" + estiloCelda + "'>" + c.telefono + "</td>" +
-      "<td style='" + estiloCelda + "'>" + c.monto + "</td>" +
-      "<td style='" + estiloCelda + "'>" + c.reservaId + "</td>" +
-      "<td style='" + estiloCelda + "'>" + c.vence + "</td>" +
-    "</tr>"
-  ).join("");
+  let filasPendientes = datosPendientes.map(c => `
+    <tr>
+      <td style="${estiloCelda}">${c.numero}</td>
+      <td style="${estiloCelda}">${c.nombre}</td>
+      <td style="${estiloCelda}">${c.telefono}</td>
+      <td style="${estiloCelda}">${c.monto}</td>
+      <td style="${estiloCelda}">${c.reservaId}</td>
+      <td style="${estiloCelda}">${c.vence}</td>
+    </tr>
+  `).join("");
 
-  const htmlExcel =
-    "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns='http://www.w3.org/TR/REC-html40'>" +
-    "<head><meta charset='UTF-8'></head>" +
-    "<body>" +
-    "<table border='1' cellspacing='0' cellpadding='0' style='border-collapse:collapse; font-family:Arial, sans-serif; font-size:13px;'>" +
-    "<tr><td colspan='6' style='" + estiloTitulo + "'>NUMEROS VENDIDOS (PAGO CONFIRMADO)</td></tr>" +
-    "<tr>" +
-      "<th style='" + estiloHeader + "'>Numero</th>" +
-      "<th style='" + estiloHeader + "'>Nombre y apellido</th>" +
-      "<th style='" + estiloHeader + "'>Telefono</th>" +
-      "<th style='" + estiloHeader + "'>Monto pagado</th>" +
-      "<th style='" + estiloHeader + "'>ID de reserva</th>" +
-      "<th style='" + estiloHeader + "'></th>" +
-    "</tr>" +
-    filasVendidos +
-    "<tr>" +
-      "<td style='" + estiloTotal + "'>TOTAL VENDIDOS</td>" +
-      "<td style='" + estiloTotal + "'>" + datosVendidos.length + "</td>" +
-      "<td style='" + estiloTotal + "'></td>" +
-      "<td style='" + estiloTotal + "'>" + totalVendidoRecaudado + "</td>" +
-      "<td style='" + estiloTotal + "'></td>" +
-      "<td style='" + estiloTotal + "'></td>" +
-    "</tr>" +
-    "<tr><td colspan='6' style='height:20px; border:none;'></td></tr>" +
-    "<tr><td colspan='6' style='" + estiloTitulo + "'>NUMEROS PENDIENTES DE APROBACION (RESERVADOS, ESPERANDO CONFIRMACION MANUAL)</td></tr>" +
-    "<tr>" +
-      "<th style='" + estiloHeader + "'>Numero</th>" +
-      "<th style='" + estiloHeader + "'>Nombre y apellido</th>" +
-      "<th style='" + estiloHeader + "'>Telefono</th>" +
-      "<th style='" + estiloHeader + "'>Monto a cobrar</th>" +
-      "<th style='" + estiloHeader + "'>ID de reserva</th>" +
-      "<th style='" + estiloHeader + "'>Estado del plazo</th>" +
-    "</tr>" +
-    filasPendientes +
-    "<tr>" +
-      "<td style='" + estiloTotal + "'>TOTAL PENDIENTES</td>" +
-      "<td style='" + estiloTotal + "'>" + datosPendientes.length + "</td>" +
-      "<td style='" + estiloTotal + "'></td>" +
-      "<td style='" + estiloTotal + "'>" + totalPendienteMonto + "</td>" +
-      "<td style='" + estiloTotal + "'></td>" +
-      "<td style='" + estiloTotal + "'></td>" +
-    "</tr>" +
-    "</table>" +
-    "</body></html>";
+  const htmlExcel = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="UTF-8">
+      <!--[if gte mso 9]>
+      <xml>
+        <x:ExcelWorkbook>
+          <x:ExcelWorksheets>
+            <x:ExcelWorksheet>
+              <x:Name>Rifa NH</x:Name>
+              <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+            </x:ExcelWorksheet>
+          </x:ExcelWorksheets>
+        </x:ExcelWorkbook>
+      </xml>
+      <![endif]-->
+    </head>
+    <body>
+      <table border="1" cellspacing="0" cellpadding="0" style="border-collapse:collapse; font-family:Arial, sans-serif; font-size:13px;">
+        <tr><td colspan="6" style="${estiloTitulo}">NÚMEROS VENDIDOS (PAGO CONFIRMADO)</td></tr>
+        <tr>
+          <th style="${estiloHeader}">Número</th>
+          <th style="${estiloHeader}">Nombre y apellido</th>
+          <th style="${estiloHeader}">Teléfono</th>
+          <th style="${estiloHeader}">Monto pagado</th>
+          <th style="${estiloHeader}">ID de reserva</th>
+          <th style="${estiloHeader}"></th>
+        </tr>
+        ${filasVendidos}
+        <tr>
+          <td style="${estiloTotal}">TOTAL VENDIDOS</td>
+          <td style="${estiloTotal}">${datosVendidos.length}</td>
+          <td style="${estiloTotal}"></td>
+          <td style="${estiloTotal}">${totalVendidoRecaudado}</td>
+          <td style="${estiloTotal}"></td>
+          <td style="${estiloTotal}"></td>
+        </tr>
+        <tr><td colspan="6" style="height:20px; border:none;"></td></tr>
+        <tr><td colspan="6" style="${estiloTitulo}">NÚMEROS PENDIENTES DE APROBACIÓN (RESERVADOS, ESPERANDO CONFIRMACIÓN MANUAL)</td></tr>
+        <tr>
+          <th style="${estiloHeader}">Número</th>
+          <th style="${estiloHeader}">Nombre y apellido</th>
+          <th style="${estiloHeader}">Teléfono</th>
+          <th style="${estiloHeader}">Monto a cobrar</th>
+          <th style="${estiloHeader}">ID de reserva</th>
+          <th style="${estiloHeader}">Estado del plazo</th>
+        </tr>
+        ${filasPendientes}
+        <tr>
+          <td style="${estiloTotal}">TOTAL PENDIENTES</td>
+          <td style="${estiloTotal}">${datosPendientes.length}</td>
+          <td style="${estiloTotal}"></td>
+          <td style="${estiloTotal}">${totalPendienteMonto}</td>
+          <td style="${estiloTotal}"></td>
+          <td style="${estiloTotal}"></td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
 
   const blob = new Blob(["\ufeff" + htmlExcel], { type: "application/vnd.ms-excel;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -638,16 +446,16 @@ window.exportarExcel = async function(){
   const fecha = new Date().toISOString().slice(0,10);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "rifa_nh_vendidos_y_pendientes_" + fecha + ".xls";
+  a.download = `rifa_nh_vendidos_y_pendientes_${fecha}.xls`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 };
 
-document.getElementById("buscador").addEventListener("input", render);
-document.getElementById("filtroEstado").addEventListener("change", render);
+document.getElementById("buscador")?.addEventListener("input", render);
+document.getElementById("filtroEstado")?.addEventListener("change", render);
+</script>
 
-
-
-
+</body>
+</html>
