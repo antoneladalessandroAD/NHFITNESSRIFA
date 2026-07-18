@@ -484,7 +484,7 @@ async function notificarAdminTelegram(nombre, telefono, listaNumeros, monto){
 
 function esTelefonoValido(telefono){
   const soloNumeros = telefono.replace(/[^\d]/g, "");
-  return soloNumeros.length >= 8 && soloNumeros.length <= 10;
+  return soloNumeros.length === 10;
 }
 
 let numeros = [];
